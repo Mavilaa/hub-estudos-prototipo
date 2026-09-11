@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hub de Estudos · Protótipo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    /* --- cor --- */
+    --paper:#f1f1f1; --paper-2:#ffffff;
+    --ink:#1a1a1a; --ink-soft:#5c5c5c; --ink-faint:#8c8c8c;
+    --line:#1a1a1a; --line-soft:#bdbdbd;
+    --fill:#d4d4d4; --fill-soft:#ededed;
+    --sel:#333333; --sel-soft:#e2e2e2;
+    --nota:#d1341c;
+    --acao:#1f4ed8; --acao-esc:#173bab;
+
+    /* --- espaco: escala de 4 --- */
+    --e1:4px; --e2:8px; --e3:12px; --e4:16px; --e5:24px; --e6:32px;
+
+    /* --- traco: 2 pesos + 1 de enfase --- */
+    --l1:1.5px; --l2:2px; --l3:3px;
+
+    /* --- raio: 3 degraus --- */
+    --r1:8px; --r2:12px; --r3:16px; --r-pil:999px;
+
+    /* --- tipo: 5 degraus --- */
+    --t-xs:12px; --t-sm:13px; --t-md:15px; --t-lg:19px; --t-xl:25px;
+
+    /* --- medidas de leitura --- */
+    --med-form:420px; --med-texto:560px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-md);line-height:1.5}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+  /* ---------- utilitarios (substituem os style="" soltos) ---------- */
+  .bloco{margin-top:var(--e4)}
+  .bloco-p{margin-top:var(--e3)}
+  .bloco-g{margin-top:var(--e5)}
+  .cresce{flex:1}
+  .empurra{margin-left:auto}
+  .centro{text-align:center}
+  .entre{justify-content:space-between}
+  .fraco{color:var(--ink-soft)}
+  .apagado{color:var(--ink-faint)}
+  .txt-p{font-size:var(--t-sm)}
+  .txt-xp{font-size:var(--t-xs)}
+  .med-form{max-width:var(--med-form)}
+  .med-texto{max-width:var(--med-texto)}
+  .bloco-xxp{margin-top:var(--e1)}
+  .bloco-xp{margin-top:var(--e2)}
+  .sem-topo{margin-top:0}
+  .sem-margem{margin:0}
+  .esp-y{margin:var(--e2) 0}
+  .fim-p{margin-bottom:var(--e3)}
+  .bl{display:block}
+  .txt-g{font-size:var(--t-lg)}
+  .pad-p{padding:var(--e2) var(--e3)}
+  .pad-y{padding:var(--e2) 0}
+  .pb-p{padding-bottom:var(--e2)}
+  .pb{padding-bottom:var(--e3)}
+  .pr{padding-right:var(--e4)}
+  .div-b{border-bottom:var(--l2) dashed var(--line-soft)}
+  .div-b-fina{border-bottom:var(--l1) dashed var(--line-soft)}
+  .div-b-solido{border-bottom:var(--l2) solid var(--line-soft)}
+  .div-d{border-right:var(--l2) dashed var(--line-soft)}
+  .borda-g{border-width:var(--l3)}
+  .borda-trac{border-style:dashed}
+  .avatar-quad{border-radius:var(--r1)}
+  .mini-barra{height:var(--e2);border-radius:var(--r1);margin-top:var(--e1)}
+  .vazio{min-height:150px;display:grid;place-items:center;color:var(--ink-faint)}
+  .col-2{display:grid;gap:var(--e4);grid-template-columns:minmax(200px,240px) 1fr}
+  .col-lado{display:grid;gap:var(--e4);grid-template-columns:minmax(150px,190px) 1fr}
+  .semana{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--e1)}
+  .dia{border:var(--l2) solid var(--line-soft);border-radius:var(--r1);min-height:48px;padding:var(--e1);font-size:var(--t-xs)}
+  .dia.marcado{border-color:var(--line)}
+  .destaque{background:var(--sel-soft);font-weight:600;border-radius:var(--r1)}
+
+  /* ---------- barra de controle do prototipo ---------- */
+  .painel-teste{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;padding:var(--e3) var(--e4);display:flex;gap:var(--e4);align-items:center;flex-wrap:wrap}
+  .painel-teste .rot{font-family:'IBM Plex Mono',monospace;font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;opacity:.65}
+  .tarefa{display:flex;gap:var(--e2);flex-wrap:wrap;align-items:center}
+  .tarefa button{background:transparent;border:var(--l2) solid rgba(255,255,255,.4);color:#fff;border-radius:var(--r1);padding:var(--e1) var(--e3);font-size:var(--t-sm)}
+  .tarefa button[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff;font-weight:600}
+  .btn-vista{background:transparent;border:var(--l2) solid rgba(255,255,255,.4);color:#fff;border-radius:var(--r1);padding:var(--e1) var(--e3);font-size:var(--t-sm)}
+  .btn-vista[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff;font-weight:600}
+  .cargo{margin-left:auto;display:flex;gap:var(--e2);align-items:center;font-size:var(--t-sm)}
+  .cargo select{font:inherit;font-size:var(--t-sm);border-radius:var(--r1);border:var(--l2) solid rgba(255,255,255,.4);background:transparent;color:#fff;padding:var(--e1) var(--e2)}
+  .cargo select option{color:#1a1a1a}
+  a.btn-vista{text-decoration:none}
+  .hora-teste{display:flex;gap:var(--e2);align-items:center;font-size:var(--t-sm)}
+  .hora-teste select{font:inherit;font-size:var(--t-sm);border-radius:var(--r1);border:var(--l2) solid rgba(255,255,255,.4);background:transparent;color:#fff;padding:var(--e1) var(--e2)}
+  .hora-teste select option{color:#1a1a1a}
+  .fav{padding:0 var(--e1);border-radius:var(--r1)} .fav:hover{background:var(--sel-soft)}
+  .dica{background:#2e2e2e;color:#fff;padding:var(--e3) var(--e4);font-size:var(--t-sm);display:flex;gap:var(--e3);align-items:baseline;margin:0}
+  .dica b{white-space:nowrap}
+
+  /* ---------- app ---------- */
+  .app{container-type:inline-size;max-width:1080px;margin:var(--e5) auto;background:var(--paper-2);border:var(--l2) solid var(--line);border-radius:var(--r3);overflow:hidden;min-height:520px}
+  .cabecalho{display:flex;align-items:center;gap:var(--e3);padding:var(--e3) var(--e4);border-bottom:var(--l2) solid var(--line);flex-wrap:wrap}
+  .marca{display:flex;align-items:center;gap:var(--e2);font-weight:600;font-size:var(--t-md);letter-spacing:.02em}
+  .xicara{width:var(--e5);height:var(--e5);border:var(--l2) solid var(--line);border-radius:50%;flex:none}
+  nav.links{margin-left:auto;display:flex;align-items:center;gap:var(--e1);flex-wrap:wrap;font-size:var(--t-sm)}
+  nav.links button{background:none;border:0;padding:var(--e1) var(--e2);border-radius:var(--r1)}
+  nav.links button:hover{background:var(--fill-soft)}
+  nav.links button.on{color:var(--ink);font-weight:600;box-shadow:inset 0 calc(-1 * var(--l2)) 0 var(--sel)}
+  /* background:none acima apagava o preenchimento do avatar e do botao cheio */
+  nav.links button.avatar{background:var(--ink);border:var(--l2) solid var(--line)}
+  nav.links button.avatar:hover{background:var(--sel)}
+  .contagem{background:var(--sel);color:#fff;border-radius:var(--r-pil);font-size:var(--t-xs);font-weight:700;padding:0 var(--e2);margin-left:var(--e1);font-variant-numeric:tabular-nums}
+  .avatar{width:var(--e6);height:var(--e6);border:var(--l2) solid var(--line);border-radius:50%;background:var(--ink);flex:none;padding:0}
+
+  main{padding:var(--e5)}
+  h1{font-size:var(--t-xl);margin:0;line-height:1.25}
+  h2{font-size:var(--t-lg);margin:0;line-height:1.3}
+  h3{font-size:var(--t-md);margin:0;line-height:1.35}
+  .sub{color:var(--ink-soft);font-size:var(--t-sm);margin:var(--e1) 0 0}
+
+  /* ---------- controles ---------- */
+  .btn{border:var(--l2) solid var(--line);border-radius:var(--r1);padding:var(--e1) var(--e3);font-size:var(--t-sm);background:var(--paper-2)}
+  .btn-cheio{background:var(--acao);border-color:var(--acao);color:#fff}
+  .btn-cheio:hover{background:var(--acao-esc);border-color:var(--acao-esc)}
+  /* o seletor nav.links button vinha depois e apagava o fundo do .btn */
+  nav.links button.btn-cheio{background:var(--acao);color:#fff}
+  nav.links button.btn-cheio:hover{background:var(--acao-esc)}
+  .btn-peq{padding:0 var(--e2);font-size:var(--t-xs)}
+  .campo{border:var(--l2) solid var(--line);border-radius:var(--r1);padding:var(--e2) var(--e3);font:inherit;font-size:var(--t-sm);width:100%;background:var(--paper-2);color:var(--ink)}
+  .campo:focus-visible,button:focus-visible,select:focus-visible{outline:var(--l3) solid var(--sel);outline-offset:2px}
+  .campo.erro{border-color:var(--nota)}
+  .msg-erro{color:var(--nota);font-size:var(--t-xs);margin:var(--e1) 0 0}
+  .rotulo{font-size:var(--t-sm);color:var(--ink-soft);margin:var(--e3) 0 var(--e1)}
+  .chip{border:var(--l2) solid var(--line);border-radius:var(--r-pil);padding:var(--e1) var(--e3);font-size:var(--t-xs);background:var(--paper-2);white-space:nowrap}
+  .chip.on{background:var(--sel);border-color:var(--sel);color:#fff}
+
+  .btn-perigo{border-color:var(--nota);color:var(--nota)}
+  .switch{width:42px;height:22px;border:var(--l2) solid var(--line);border-radius:var(--r-pil);position:relative;flex:none;background:var(--paper-2);padding:0}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--fill)}
+  .switch[aria-checked="true"]{background:var(--acao);border-color:var(--acao)}
+  .switch[aria-checked="true"]::after{left:auto;right:2px;background:#fff}
+  .chips{display:flex;gap:var(--e2);align-items:center;flex-wrap:wrap;margin-top:var(--e3)}
+  .icone{position:relative;width:34px;height:34px;border:var(--l2) solid var(--line);border-radius:var(--r1);display:grid;place-items:center;font-size:15px;flex:none;background:var(--paper-2);padding:0}
+  .badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 var(--e1);border-radius:var(--r-pil);background:var(--acao);color:#fff;font-size:var(--t-xs);font-weight:700;display:grid;place-items:center;line-height:1}
+  nav.links .nav-mob{display:none;margin-left:auto;gap:var(--e2);align-items:center}
+  nav.links .nav-desk{display:flex;gap:var(--e1);align-items:center;flex-wrap:wrap}
+  .col-cal{display:grid;gap:var(--e4);grid-template-columns:1fr minmax(220px,270px)}
+  .log{border:var(--l2) dashed var(--line-soft);border-radius:var(--r2);padding:var(--e3);font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:var(--t-xs);line-height:1.8;min-height:150px}
+  .item-lado{display:block;width:100%;text-align:left;border:0;background:none}
+  .so-mob{display:none}
+
+  /* ---------- variante mobile: as outras 11 das 26 telas ---------- */
+  /* container query: vale tanto para tela estreita quanto para o botao "Ver no celular" */
+  .app.celular{max-width:390px}
+  @container (max-width:720px){
+    nav.links .nav-desk{display:none}
+    nav.links .nav-mob{display:flex}
+    .grade{grid-template-columns:1fr}
+    .col-2,.col-lado,.col-cal{grid-template-columns:1fr}
+    .div-d{border-right:0;border-bottom:var(--l2) dashed var(--line-soft);padding-right:0;padding-bottom:var(--e3)}
+    .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:var(--e1)}
+    .semana{gap:2px}
+    .dia{min-height:34px}
+    .so-mob{display:block}
+    .so-desk{display:none}
+    main{padding:var(--e4)}
+    h1{font-size:var(--t-lg)}
+    .menu-flut{width:auto;left:var(--e3);right:var(--e3)}
+  }
+
+  /* ---------- caixas ---------- */
+  .caixa{border:var(--l2) solid var(--line);border-radius:var(--r2);padding:var(--e3)}
+  .caixa-trac{border:var(--l2) dashed var(--line-soft);border-radius:var(--r2);padding:var(--e4)}
+  .fantasma{height:var(--e2);border-radius:var(--r1);background:var(--fill);margin:var(--e2) 0}
+  .fantasma.curto{width:45%}.fantasma.medio{width:70%}
+  .linha{display:flex;gap:var(--e2);align-items:center;flex-wrap:wrap}
+  .grade{display:grid;gap:var(--e3);grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin-top:var(--e4)}
+  .card{border:var(--l2) solid var(--line);border-radius:var(--r2);padding:var(--e3);display:flex;flex-direction:column;gap:var(--e2);text-align:left;background:var(--paper-2);min-height:132px}
+  .card:hover{background:var(--fill-soft)}
+  .card .rodape{margin-top:auto;font-size:var(--t-xs);color:var(--ink-soft);display:flex;justify-content:space-between}
+
+  /* ---------- navegacao secundaria ---------- */
+  .abas{display:flex;gap:var(--e5);border-bottom:var(--l2) solid var(--line-soft);margin:var(--e4) 0;flex-wrap:wrap}
+  .abas button{background:none;border:0;padding:var(--e2) 0;font-size:var(--t-md);color:var(--ink-soft)}
+  .abas button.on{color:var(--ink);font-weight:600;box-shadow:inset 0 calc(-1 * var(--l3)) 0 var(--sel)}
+
+  /* ---------- conversa ---------- */
+  .thread{display:flex;flex-direction:column;gap:var(--e2);padding:var(--e3);background:var(--fill-soft);border-radius:var(--r2);min-height:190px}
+  .bolha{max-width:74%;border:var(--l2) solid var(--line);border-radius:var(--r2);padding:var(--e2) var(--e3);font-size:var(--t-sm);background:var(--paper-2)}
+  .bolha.minha{align-self:flex-end;background:var(--sel-soft)}
+  .hora{font-size:var(--t-xs);color:var(--ink-faint);display:block;text-align:right}
+
+  /* ---------- dados ---------- */
+  .voto{display:flex;align-items:center;gap:var(--e3);margin:var(--e2) 0}
+  .voto button{flex:1;text-align:left;border:var(--l2) solid var(--line);border-radius:var(--r1);padding:0;position:relative;overflow:hidden;background:var(--paper-2);height:var(--e6)}
+  .voto .preench{position:absolute;inset:0 auto 0 0;background:var(--sel-soft)}
+  .voto .txt{position:relative;padding:0 var(--e3);line-height:28px;font-size:var(--t-sm)}
+  .voto .pct{width:48px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:var(--t-sm)}
+  .barra-dado{display:flex;align-items:center;gap:var(--e3);margin:var(--e2) 0;font-size:var(--t-sm)}
+  .barra-dado .nome{width:120px}
+  .barra-dado .valor{height:var(--e3);background:var(--sel);border-radius:var(--r1)}
+
+  /* ---------- destaques ---------- */
+  .aviso{border:var(--l2) dashed var(--nota);color:var(--nota);border-radius:var(--r2);padding:var(--e3) var(--e4);font-size:var(--t-sm);margin-top:var(--e3)}
+  .conclusao{border:var(--l3) solid var(--sel);border-radius:var(--r3);padding:var(--e5);text-align:center;background:var(--fill-soft)}
+
+  /* ---------- listas ---------- */
+  .lista > button{display:flex;gap:var(--e3);padding:var(--e3);border:0;border-bottom:var(--l1) dashed var(--line-soft);width:100%;text-align:left;background:none;align-items:center}
+  .lista > button:hover{background:var(--fill-soft)}
+  .lista .sel{background:var(--sel-soft)}
+  .ponto{width:var(--e2);height:var(--e2);border-radius:50%;background:var(--sel);flex:none}
+
+  /* ---------- menus ---------- */
+  .menu-flut{position:absolute;top:calc(100% + var(--e2));right:var(--e4);background:var(--paper-2);border:var(--l2) solid var(--line);border-radius:var(--r2);padding:var(--e2);box-shadow:5px 6px 0 rgba(0,0,0,.12);width:290px;max-width:calc(100% - var(--e6));z-index:30;text-align:left}
+  .menu-flut::before{content:'';position:absolute;top:calc(-1 * var(--e2) - var(--l2));right:var(--e5);width:var(--e3);height:var(--e3);background:var(--paper-2);border-left:var(--l2) solid var(--line);border-top:var(--l2) solid var(--line);transform:rotate(45deg)}
+  /* a seta do painel de notificacoes aponta para a palavra, nao para o avatar */
+  .menu-notif::before{right:70px}
+  .menu-flut .topo{padding:var(--e2) var(--e3);display:flex;gap:var(--e3);align-items:center}
+  .menu-flut button{display:block;width:100%;text-align:left;background:none;border:0;padding:var(--e2) var(--e3);border-radius:var(--r1);font-size:var(--t-sm)}
+  .menu-flut button:hover{background:var(--fill-soft)}
+  .menu-flut .sep{border-top:var(--l1) dashed var(--line-soft);margin:var(--e2) var(--e1)}
+  .rel{position:relative}
+
+  table.inbox{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+  table.inbox td{border-bottom:var(--l1) dashed var(--line-soft);padding:var(--e2);vertical-align:top;text-align:left}
+  .rolagem{overflow-x:auto}
+  [hidden]{display:none!important}
+  @media (prefers-reduced-motion:no-preference){.card,.btn{transition:background .12s}}
+  @media(max-width:640px){ nav.links{gap:2px;font-size:var(--t-xs)} .app{margin:var(--e3) var(--e2)} main{padding:var(--e4)} }
+
+  /* ---------- versao mobile: o app de celular roda num iframe proprio ---------- */
+  .vista-celular{display:flex;justify-content:center;padding:var(--e5) var(--e4)}
+  .vista-celular .moldura{display:flex;flex-direction:column;align-items:center;gap:var(--e2)}
+  .vista-celular .legenda{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:var(--t-xs);letter-spacing:.08em;color:var(--ink-soft);margin:0}
+  .vista-celular iframe{width:394px;height:848px;max-width:100%;border:var(--l2) solid var(--line);border-radius:30px;background:#fff;display:block}
+</style>
+
+<div class="painel-teste">
+  <a class="btn-vista" href="index.html">← Instruções</a>
+  <span class="rot">Protótipo · tarefa</span>
+  <div class="tarefa" id="tarefas">
+    <button data-t="1" aria-pressed="true">1 · Entrar</button>
+    <button data-t="2" aria-pressed="false">2 · Achar material</button>
+    <button data-t="3" aria-pressed="false">3 · Tirar dúvida</button>
+    <button data-t="4" aria-pressed="false">4 · Abrir enquete</button>
+  </div>
+  <button class="btn-vista" id="vista" aria-pressed="false">Ver no celular</button>
+  <label class="hora-teste">Horário
+    <select id="horario">
+      <option value="dentro">14:00 · monitoria aberta</option>
+      <option value="fora">23:10 · fora do horário</option>
+    </select>
+  </label>
+  <label class="cargo">Cargo
+    <select id="cargo">
+      <option value="visitante">visitante</option>
+      <option value="aluno">aluno</option>
+      <option value="monitor">monitor</option>
+      <option value="professor">professor</option>
+    </select>
+  </label>
+</div>
+<p class="dica"><b>Faça isto:</b> <span id="dica-txt"></span></p>
+
+<div class="app" id="app">
+  <header class="cabecalho rel">
+    <span class="marca"><span class="xicara"></span>HUB DE ESTUDOS</span>
+    <nav class="links" id="nav"></nav>
+    <div class="menu-flut" id="menu-perfil" hidden></div>
+    <div class="menu-flut menu-notif" id="menu-notif" hidden></div>
+    <div class="menu-flut" id="menu-ham" hidden></div>
+  </header>
+  <main id="tela"></main>
+</div>
+
+<div class="vista-celular" id="celular" hidden>
+  <div class="moldura">
+    <p class="legenda">VERSÃO MOBILE · 390 × 844 · cargo e tarefas da barra valem aqui</p>
+    <iframe id="fone" src="hub-mobile.html?embed=1" title="Hub de Estudos no celular"></iframe>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- estado ----------
+  var S = {
+    cargo:'visitante', tela:'inicio', tarefa:'1',
+    busca:'', aba:{msg:'conversas', duv:'turma'},
+    naoLidasMsg:0, naoLidasNotif:0,
+    pedidoEnviado:false, respostaChegou:false, votou:false, enqueteAberta:false, aulaoMarcado:false,
+    assuntoPre:'', erroLogin:'',
+    disc:'todas', abaEntrar:'entrar', celular:false, convAberta:null,
+    configSec:'Notificações', feedSalvo:false, importou:false, estudoAberto:1,
+    // caminhos alternativos e de erro dos fluxos F1, F3 e F4
+    email:'', erroGeral:'', motivoLogin:'', favoritos:{}, foraHorario:false, naFila:false,
+    etapaAulao:null, temaAulao:'Complexidade na prática', dataAulao:'18', conflito:false, desempate:false,
+    notif:{'Respostas às minhas dúvidas':true,'Mensagens de monitores':true,'Enquetes e aulões da minha turma':true,'Novos estudos nas minhas disciplinas':false}
+  };
+
+  var DICAS = {
+    '1':'entre no sistema. Tente favoritar um estudo, erre o e-mail de propósito (ex.: lorem@ipsum.com) para ver a validação, corrija para @sga.exemplo.br e entre. Com uma senha diferente de 123456 aparece “E-mail ou senha incorretos”.',
+    '2':'busque “integrais” e abra o estudo. Depois busque “grafos ponderados” para cair no estado vazio e use “Pedir esse material”.',
+    '3':'em Dúvidas & Feedback, veja as dúvidas parecidas, envie uma nova, abra a notificação de resposta e marque como útil. Com o Horário da barra em 23:10, a dúvida entra na fila antes de virar pedido.',
+    '4':'como monitor, abra a enquete no painel da turma; em Aulões, encerre, escolha data e sala e confirme. Alternativos: “Simular empate” ou a data 22/09, que conflita com a prova.'
+  };
+  // as mesmas 4 tarefas, com os caminhos da versao mobile
+  var DICAS_MOB = {
+    '1':'toque no ♥ de um estudo (o app pede login), erre o e-mail de propósito (ex.: lorem@gmail.com) para ver a validação, corrija para @sga.exemplo.br e entre. Com uma senha diferente de 123456 aparece “E-mail ou senha incorretos”.',
+    '2':'em Matérias › Estudos, busque “regra da cadeia” e abra o estudo. Depois busque “grafos ponderados” para cair no estado vazio e use “Pedir esse material”.',
+    '3':'em Feedback › Turma veja as dúvidas frequentes; em Enviar confira “Já perguntaram parecido”, envie, simule a resposta do monitor e marque “Sim, resolveu” no chat. Com o Horário da barra em 23:10, a dúvida entra na fila antes de virar pedido.',
+    '4':'como monitor, em Feedback › Turma abra a enquete; em Aulões encerre, escolha data e sala e confirme; confira em Calendário › Mês. Alternativos: “Simular empate” ou a data 22/09, que conflita com a prova.'
+  };
+
+  var ESTUDOS = [
+    {id:1, sigla:'CALC2', titulo:'Guia de Integrais', autor:'Prof. Lorem', com:2, fav:1, chaves:'integrais calculo integral area riemann'},
+    {id:2, sigla:'AEDS2', titulo:'Complexidade de algoritmos', autor:'Ipsum · monitor', com:5, fav:3, chaves:'complexidade big o ordenacao merge sort'},
+    {id:3, sigla:'AEDS1', titulo:'Ponteiros em C — do zero', autor:'Dolor', com:1, fav:0, chaves:'ponteiros c memoria malloc'},
+    {id:4, sigla:'DIW', titulo:'Flexbox e Grid na prática', autor:'Amet', com:0, fav:2, chaves:'css flexbox grid layout responsivo'},
+    {id:5, sigla:'CALC2', titulo:'Derivadas — lista resolvida', autor:'Consectetur', com:3, fav:0, chaves:'derivadas limite lista exercicios'},
+    {id:6, sigla:'AEDS2', titulo:'Listas encadeadas', autor:'Ipsum · monitor', com:1, fav:1, chaves:'lista encadeada no ponteiro estrutura'}
+  ];
+
+  var DISCIPLINAS = ['todas','AEDS1','AEDS2','CALC2','DIW','BD1','ES'];
+  var CONVERSAS = [
+    {id:'monitor', nome:'Ipsum · monitor AEDS2', sub:'', tipo:'pessoa', nao:0},
+    {id:'aeds2',   nome:'AEDS2 · turma 04', sub:'# complexidade', tipo:'sala', nao:0},
+    {id:'calc2',   nome:'CALC2 · turma 02', sub:'# integrais', tipo:'sala', nao:0}
+  ];
+
+  var el = function(id){ return document.getElementById(id); };
+  var esc = function(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+
+  function ir(tela){ S.tela = tela; desenhar(); window.scrollTo({top:0,behavior:'smooth'}); }
+  function logado(){ return S.cargo !== 'visitante'; }
+  // monitor e professor compartilham as mesmas permissoes por enquanto
+  function equipe(){ return S.cargo === 'monitor' || S.cargo === 'professor'; }
+
+  // ---------- cabeçalho ----------
+  function desenharNav(){
+    var n = [];
+    n.push(botaoNav('Início','inicio'));
+    if (logado()){
+      n.push(botaoNav('Calendário','calendario'));
+      n.push(botaoNav('Dúvidas &amp; Feedback','duvidas'));
+      if (equipe()) n.push(botaoNav('Publicar','publicar'));
+      n.push('<button data-ir="mensagens" class="' + (S.tela==='mensagens'?'on':'') + '">Mensagens' + (S.naoLidasMsg ? '<span class="contagem">'+S.naoLidasMsg+'</span>' : '') + '</button>');
+      n.push('<button data-menu="notif">Notificações' + (S.naoLidasNotif ? '<span class="contagem">'+S.naoLidasNotif+'</span>' : '') + '</button>');
+      n.push('<button class="avatar" data-menu="perfil" aria-label="Menu do perfil"></button>');
+    } else {
+      n.push('<button class="btn btn-cheio" data-ir="entrar">Entrar</button>');
+    }
+
+    // no celular as palavras viram icones com badge; ✉ e 🔔 nunca entram no ☰
+    var m = [];
+    if (logado()){
+      m.push('<button class="icone" data-ir="mensagens" aria-label="Mensagens">✉' + (S.naoLidasMsg ? '<span class="badge">'+S.naoLidasMsg+'</span>' : '') + '</button>');
+      m.push('<button class="icone" data-menu="notif" aria-label="Notificações">🔔' + (S.naoLidasNotif ? '<span class="badge">'+S.naoLidasNotif+'</span>' : '') + '</button>');
+      m.push('<button class="icone" data-menu="ham" aria-label="Menu">☰</button>');
+    } else {
+      m.push('<button class="btn btn-cheio" data-ir="entrar">Entrar</button>');
+    }
+
+    el('nav').innerHTML = '<span class="nav-desk linha">' + n.join('') + '</span>' +
+                          '<span class="nav-mob">' + m.join('') + '</span>';
+  }
+  function botaoNav(rot, tela){
+    return '<button data-ir="' + tela + '" class="' + (S.tela===tela?'on':'') + '">' + rot + '</button>';
+  }
+
+  // ---------- telas ----------
+  var telas = {};
+
+  telas.inicio = function(){
+    var termo = S.busca.trim().toLowerCase();
+    var lista = ESTUDOS.filter(function(e){
+      if (S.disc !== 'todas' && e.sigla !== S.disc) return false;
+      if (!termo) return true;
+      return (e.titulo + ' ' + e.sigla + ' ' + e.chaves).toLowerCase().indexOf(termo) >= 0;
+    });
+    var h = '<h1>Resumos e ferramentas de estudo, num lugar só</h1>' +
+      '<p class="sub">Materiais de alunos, monitores e professores do curso de CC.</p>' +
+      '<div class="linha bloco"><input class="campo cresce" id="busca" style="min-width:180px" placeholder="Buscar estudo…" value="' + esc(S.busca) + '">' +
+      '<span class="txt-p"><b>' + lista.length + '</b> estudo(s)</span></div>' +
+      '<div class="chips">' + DISCIPLINAS.map(function(d){
+        return '<button class="chip' + (S.disc===d?' on':'') + '" data-disc="' + d + '">' + d + '</button>';
+      }).join('') + '</div>';
+
+    if (!lista.length){
+      h += '<div class="caixa-trac centro bloco">' +
+        '<b>Nenhum estudo encontrado' + (termo ? ' para “' + esc(S.busca) + '”' : ' com esse filtro') + '.</b>' +
+        '<p class="sub esp-y">Tente outra palavra, remova o filtro de disciplina, ou peça o material à monitoria.</p>' +
+        '<button class="btn" data-acao="limpar">Limpar busca</button> ' +
+        '<button class="btn btn-cheio" data-acao="pedir-material">Pedir esse material</button></div>';
+    } else {
+      h += '<div class="grade">' + lista.map(function(e){
+        return '<button class="card" data-estudo="' + e.id + '">' +
+          '<span class="linha entre"><span class="chip">' + e.sigla + '</span><span class="txt-xp fav" data-fav="' + e.id + '" role="button" aria-label="Favoritar">' + (S.favoritos[e.id] ? '♥ ' + (e.fav + 1) : '♡ ' + e.fav) + '</span></span>' +
+          '<b>' + esc(e.titulo) + '</b><div class="fantasma"></div><div class="fantasma medio"></div>' +
+          '<span class="rodape"><span>' + esc(e.autor) + '</span><span>' + e.com + ' coment. · abrir →</span></span></button>';
+      }).join('') + '</div>';
+    }
+    return h;
+  };
+
+  telas.entrar = function(){
+    var h = '<h1>Entrar</h1><p class="sub">Use o e-mail institucional. Quem ainda não tem conta cria uma na aba ao lado.</p>' +
+      (S.motivoLogin ? '<div class="aviso">' + esc(S.motivoLogin) + '</div>' : '') +
+      '<div class="abas"><button data-abaentrar="entrar" class="' + (S.abaEntrar==='entrar'?'on':'') + '">Entrar</button>' +
+      '<button data-abaentrar="criar" class="' + (S.abaEntrar==='criar'?'on':'') + '">Criar conta</button></div><div class="med-form">';
+
+    if (S.abaEntrar === 'criar'){
+      h += '<p class="rotulo sem-topo">Nome</p><input class="campo" placeholder="Seu nome">' +
+        '<p class="rotulo">E-mail</p><input class="campo ' + (S.erroLogin?'erro':'') + '" id="email" value="' + esc(S.email) + '" placeholder="nome@sga.exemplo.br">' +
+        (S.erroLogin ? '<p class="msg-erro">' + esc(S.erroLogin) + '</p>' : '') +
+        '<p class="rotulo">Senha</p><input class="campo" id="senha" type="password" value="123456">' +
+        '<p class="sub">Mínimo de 6 caracteres.</p>' +
+        (S.erroGeral ? '<p class="msg-erro bloco-p">' + esc(S.erroGeral) + '</p>' : '') +
+        '<p class="bloco"><button class="btn btn-cheio" data-acao="login">Criar conta e entrar</button></p>';
+    } else {
+      h += '<p class="rotulo sem-topo">E-mail</p><input class="campo ' + (S.erroLogin?'erro':'') + '" id="email" value="' + esc(S.email) + '" placeholder="nome@sga.exemplo.br">' +
+        (S.erroLogin ? '<p class="msg-erro">' + esc(S.erroLogin) + '</p>' : '') +
+        '<p class="rotulo">Senha</p><input class="campo" id="senha" type="password" value="123456">' +
+        (S.erroGeral ? '<p class="msg-erro bloco-p">' + esc(S.erroGeral) + '</p>' : '') +
+        '<p class="bloco"><button class="btn btn-cheio" data-acao="login">Entrar</button></p>';
+    }
+    return h + '</div>';
+  };
+
+  telas.estudo = function(){
+    var e = ESTUDOS[S.estudoAberto] || ESTUDOS[1];
+    var acoes = '<span class="chip">' + e.sigla + '</span><span class="chip">revisado</span><span class="chip">♥ ' + e.fav + '</span>' +
+      '<button class="btn btn-peq">Estudando</button><button class="btn btn-peq">Concluído</button>';
+    if (equipe()) acoes += '<button class="btn btn-peq">Marcar revisado</button><button class="btn btn-peq btn-perigo">Excluir</button>';
+    return '<div class="linha entre div-b-solido pb">' +
+      '<span class="linha"><button class="btn btn-peq" data-ir="inicio">← voltar</button><b class="txt-g">' + esc(e.titulo) + '</b></span>' +
+      '<span class="linha">' + acoes + '</span></div>' +
+      (equipe() ? '<p class="sub">“Marcar revisado” e “Excluir” só aparecem para monitor e professor.</p>' : '') +
+      '<div class="caixa-trac vazio bloco">conteúdo do estudo (HTML do Storage num iframe)</div>' +
+      '<h2 class="bloco">Comentários e dúvidas</h2>' +
+      '<div class="caixa esp-y"><div class="linha"><b>Nome</b><span class="chip">monitor</span><span class="empurra txt-xp apagado">04 de set.</span></div><div class="fantasma medio"></div></div>' +
+      '<p class="rotulo">Sua dúvida ou comentário</p><textarea class="campo" rows="2"></textarea>' +
+      '<p class="bloco-p"><button class="btn btn-cheio">Enviar</button> ' +
+      '<button class="btn" data-ir="duvidas">Levar para Dúvidas &amp; Feedback →</button></p>';
+  };
+
+  telas.duvidas = function(){
+    var h = '<h1>Dúvidas &amp; Feedback</h1>' +
+      '<div class="abas" id="abas-duv">' +
+      aba('turma','Dúvidas da turma', S.aba.duv) +
+      aba('enviar','Enviar', S.aba.duv) +
+      aba('auloes','Aulões', S.aba.duv) + '</div>';
+
+    if (S.aba.duv === 'turma'){
+      h += '<p class="linha"><span class="chip on">AEDS2</span><span class="chip">CALC2</span><span class="chip">DIW</span>' +
+        '<span class="empurra txt-p fraco">últimos 30 dias</span></p>';
+      h += '<div class="caixa bloco-p"><h3>Onde a turma mais trava</h3>' +
+        barra('Complexidade', 74, 31) + barra('Recursão', 52, 22) + barra('Ponteiros', 29, 12) + barra('Ordenação', 19, 8);
+      if (equipe() && !S.enqueteAberta){
+        h += '<p class="bloco-p"><button class="btn btn-cheio" data-acao="abrir-enquete">Abrir enquete de aulão com os 3 do topo</button> ' +
+             '<button class="btn">Gerar relatório para o professor</button></p>';
+      } else if (equipe()){
+        h += '<p class="bloco-p"><button class="btn">Gerar relatório para o professor</button></p>';
+      }
+      h += '</div>';
+
+      if (S.enqueteAberta){
+        h += '<div class="caixa bloco-p borda-g"><div class="linha entre">' +
+          '<h3>Enquete — tema do próximo aulão</h3><span class="chip on">aberta</span></div>' +
+          '<p class="sub">AEDS2 · encerra em 2 dias · ' + (S.votou?'49':'48') + ' votos</p>' +
+          opcaoVoto('Complexidade na prática', 52) + opcaoVoto('Recursão passo a passo', 29) + opcaoVoto('Ponteiros e memória', 19);
+        if (S.votou) h += '<p class="sub"><b>Voto registrado.</b> O resultado vira aulão na aba Aulões.</p>';
+        h += '</div>';
+      }
+
+      h += '<h3 class="bloco">Dúvidas mais frequentes</h3>' +
+        '<div class="caixa esp-y"><b>Por que merge sort é n log n e não n²?</b> <span class="chip">respondida</span>' +
+        '<div class="fantasma medio"></div><span class="sub">respondida por Ipsum (monitor) · 18 marcaram como útil</span></div>' +
+        '<div class="caixa esp-y"><b>Quando usar lista encadeada em vez de array?</b> <span class="chip">respondida</span>' +
+        '<div class="fantasma curto"></div><span class="sub">respondida por Prof. Lorem · 9 marcaram como útil</span></div>';
+      if (S.pedidoEnviado){
+        h += '<div class="caixa esp-y borda-trac"><b>Como calcular a complexidade de recursão dupla?</b> ' +
+          '<span class="chip">' + (S.respostaChegou ? 'respondida' : 'aguardando') + '</span>' +
+          '<span class="sub bl">sua dúvida · pedido #143</span></div>';
+      }
+    }
+
+    if (S.aba.duv === 'enviar'){
+      if (S.naFila){
+        h += '<div class="conclusao"><h2>Sua dúvida entrou na fila</h2>' +
+          '<p class="sub">Agora são 23:10 e a monitoria de AEDS2 atende das 8 h às 22 h. O pedido é criado e os monitores são avisados assim que o atendimento abrir.</p>' +
+          '<p class="bloco"><button class="btn btn-cheio" data-acao="abrir-horario">Simular: chegou 8 h</button></p></div>';
+      } else if (S.pedidoEnviado){
+        h += '<div class="conclusao"><h2>Pedido #143 enviado</h2>' +
+          '<p class="sub">Os monitores de AEDS2 foram notificados. Você recebe um aviso quando alguém responder.</p>' +
+          '<p class="bloco"><button class="btn btn-cheio" data-acao="simular-resposta">Simular a resposta do monitor</button></p></div>';
+      } else {
+        h += '<div class="med-texto"><p class="rotulo sem-topo">O que você quer enviar?</p>' +
+          '<p class="linha"><span class="chip on">Dúvida de matéria</span><span class="chip">Problema no site</span><span class="chip">Sugestão</span></p>' +
+          '<p class="rotulo">Disciplina e turma</p><input class="campo" value="AEDS2 · turma 04">' +
+          '<p class="rotulo">Assunto</p><input class="campo" id="assunto" value="' + esc(S.assuntoPre) + '" placeholder="Ex.: complexidade de recursão dupla">' +
+          '<p class="rotulo">Descreva</p><textarea class="campo" rows="3"></textarea>' +
+          '<div class="caixa-trac bloco"><b>Já perguntaram parecido</b>' +
+          '<p class="sub">Antes de enviar, veja se alguma destas resolve — é a triagem do RF-05.</p>' +
+          '<p class="bloco-xp"><button class="btn btn-peq" data-acao="resolveu">Resolveu, cancelar envio</button></p></div>' +
+          '<p class="bloco"><button class="btn btn-cheio" data-acao="enviar-duvida">Enviar</button></p></div>';
+      }
+    }
+
+    if (S.aba.duv === 'auloes'){
+      if (S.aulaoMarcado){
+        h += '<div class="conclusao"><h2>Aulão publicado no calendário</h2>' +
+          '<p class="sub">' + esc(S.temaAulao) + ' · 18/09 · 19 h · sala 201 — ' + (S.desempate ? 'escolhido pela monitoria depois do empate' : 'venceu a enquete com 52%') + '.</p>' +
+          '<p class="bloco"><button class="btn btn-cheio" data-ir="calendario">Ver no calendário</button></p></div>';
+      } else if (S.enqueteAberta){
+        h += '<div class="caixa"><b>Complexidade na prática</b> <span class="chip">em votação</span>' +
+          '<p class="sub">Lidera com 52% · enquete encerra em 2 dias</p>';
+        if (equipe() && !S.etapaAulao){
+          h += '<p class="bloco-p"><button class="btn btn-cheio" data-acao="encerrar-enquete">Encerrar e marcar data</button> ' +
+            '<button class="btn" data-acao="simular-empate">Simular empate</button></p>';
+        }
+        h += '</div>';
+        if (S.etapaAulao === 'empate'){
+          h += '<div class="caixa bloco-p borda-g"><h3>Empate: 38% para cada tema</h3>' +
+            '<p class="sub">A enquete encerrou sem vencedor. Como monitor, escolha o tema do aulão.</p>' +
+            '<p class="bloco-p"><button class="btn" data-acao="desempatar" data-tema="Complexidade na prática">Complexidade na prática</button> ' +
+            '<button class="btn" data-acao="desempatar" data-tema="Recursão passo a passo">Recursão passo a passo</button></p></div>';
+        }
+        if (S.etapaAulao === 'definir'){
+          h += '<div class="caixa bloco-p borda-g"><h3>Definir data e sala · ' + esc(S.temaAulao) + '</h3>' +
+            '<p class="rotulo">Data e hora</p><p class="linha">' +
+            '<button class="chip' + (S.dataAulao === '18' ? ' on' : '') + '" data-acao="data-aulao" data-dt="18">qui 18/09 · 19 h</button>' +
+            '<button class="chip' + (S.dataAulao === '22' ? ' on' : '') + '" data-acao="data-aulao" data-dt="22">seg 22/09 · 19 h</button></p>' +
+            '<p class="rotulo">Sala</p><input class="campo med-form" value="Sala 201">' +
+            (S.conflito ? '<div class="aviso">Esse horário conflita com a P1 de AEDS2 (22/09 · 19 h). Escolha outro horário.</div>' : '') +
+            '<p class="bloco"><button class="btn btn-cheio" data-acao="confirmar-aulao">Confirmar aulão</button></p></div>';
+        }
+      } else {
+        h += '<div class="caixa-trac centro"><b>Nenhum aulão em votação.</b>' +
+          '<p class="sub">Quando um tópico acumular dúvidas, a monitoria abre uma enquete e ela aparece aqui.</p></div>';
+      }
+    }
+    return h;
+  };
+
+  telas.mensagens = function(){
+    var h = '<h1>Mensagens</h1><div class="abas" id="abas-msg">' +
+      aba('conversas','Conversas', S.aba.msg) + aba('caixa','Mensagens', S.aba.msg) + '</div>';
+
+    if (S.aba.msg === 'conversas'){
+      // no celular a lista e a conversa sao telas separadas; no desktop ficam lado a lado
+      var soLista = S.celular && !S.convAberta;
+      var soConversa = S.celular && S.convAberta;
+
+      var lista = '<div class="lista">' + CONVERSAS.map(function(c){
+        var sel = (c.id === (S.convAberta || 'monitor'));
+        return '<button class="' + (sel && !S.celular ? 'sel' : '') + '" data-conv="' + c.id + '">' +
+          '<span class="avatar' + (c.tipo==='sala'?' avatar-quad':'') + '"></span>' +
+          '<span class="cresce"><b>' + c.nome + '</b>' +
+          (c.sub ? '<div class="txt-xp apagado">' + c.sub + '</div>' : '<div class="fantasma curto"></div>') +
+          '</span></button>';
+      }).join('') + '</div>';
+
+      var topo = S.celular
+        ? '<div class="linha div-b pb-p"><button class="btn btn-peq" data-acao="voltar-lista">←</button>' +
+          '<span class="avatar"></span><b>Ipsum · monitor</b></div>'
+        : '<div class="linha div-b pb-p"><span class="avatar"></span><b>Ipsum · monitor AEDS2</b>' +
+          '<span class="empurra txt-xp fraco">atende das 8 h às 22 h</span></div>';
+
+      var conversa = topo +
+        '<div class="thread bloco-p"><div class="bolha">Como calcular a complexidade de recursão dupla?<span class="hora">14:02</span></div>' +
+        (S.respostaChegou ? '<div class="bolha minha">Monta a árvore de recursão e soma por nível — te mando um exemplo com Fibonacci<span class="hora">14:20</span></div>' : '') +
+        '</div>';
+      if (S.respostaChegou){
+        conversa += '<div class="caixa bloco-p"><b>Isso resolveu sua dúvida?</b>' +
+          '<p class="bloco-xp"><button class="btn btn-cheio" data-acao="util">Sim, resolveu</button> ' +
+          '<button class="btn" data-acao="nao-resolveu">Ainda não</button></p></div>';
+      } else {
+        conversa += '<div class="linha bloco-p"><input class="campo cresce" placeholder="Escreva sua mensagem…"><button class="btn btn-cheio">Enviar</button></div>';
+      }
+
+      if (soLista)    h += lista;
+      else if (soConversa) h += conversa;
+      else h += '<div class="col-2">' + lista + '<div>' + conversa + '</div></div>';
+
+    } else {
+      h += '<div class="chips"><span class="chip on">Caixa de entrada</span><span class="chip">Não lidas</span><span class="chip">Enviadas</span><span class="chip">Arquivadas</span></div>' +
+        '<div class="rolagem bloco-p"><table class="inbox">' +
+        '<tr><td style="width:22px"><span class="ponto"></span></td><td style="width:190px"><b>Coordenação AEDS2</b></td><td><b>Monitoria extra antes da P1</b><div class="fantasma medio"></div></td><td class="apagado" style="width:70px">10 set</td></tr>' +
+        '<tr><td><span class="ponto"></span></td><td><b>Ipsum (monitor)</b></td><td><b>Resposta ao seu pedido #143</b><div class="fantasma medio"></div></td><td class="apagado">09 set</td></tr>' +
+        '<tr><td></td><td>Hub de Estudos</td><td>Seu estudo foi marcado como revisado<div class="fantasma curto"></div></td><td class="apagado">05 set</td></tr>' +
+        '</table></div>' +
+        '<p class="sub">É esta aba que gera o histórico — conversa solta não vira dado.</p>';
+    }
+    return h;
+  };
+
+  telas.notificacoes = function(){
+    var h = '<h1>Notificações</h1><p class="linha bloco-p"><span class="chip on">todas</span><span class="chip">não lidas</span><span class="chip">respostas</span><span class="chip">enquetes</span></p>';
+    var itens = [];
+    if (S.respostaChegou) itens.push({t:'<b>Ipsum (monitor)</b> respondeu seu pedido #143', d:'há 6 min', ir:'mensagens'});
+    if (S.enqueteAberta && !equipe()) itens.push({t:'<b>Enquete aberta</b> — escolha o tema do aulão de AEDS2', d:'há 5 h', ir:'duvidas'});
+    itens.push({t:'Novo estudo publicado em <b>CALC2</b>', d:'ontem', ir:'inicio'});
+    if (!itens.length){
+      return h + '<div class="caixa-trac centro bloco"><b>Nada por aqui ainda.</b><p class="sub">Você será avisado quando alguém responder suas dúvidas.</p></div>';
+    }
+    h += '<div class="bloco">' + itens.map(function(i){
+      return '<div class="caixa fim-p">' + i.t + '<div class="sub">' + i.d + '</div>' +
+        '<p class="bloco-xp"><button class="btn btn-peq" data-ir="' + i.ir + '">abrir →</button></p></div>';
+    }).join('') + '</div>';
+    return h;
+  };
+
+  telas.calendario = function(){
+    var dias = '';
+    for (var d = 1; d <= 30; d++){
+      var ev = (S.aulaoMarcado && d === 18) ? '<div class="mini-barra" style="background:var(--sel)"></div>'
+             : ([3,5,8,12,25].indexOf(d) >= 0 ? '<div class="mini-barra" style="background:var(--fill)"></div>' : '');
+      dias += '<div class="dia' + (d===18&&S.aulaoMarcado?' marcado':'') + '">' + d + ev + '</div>';
+    }
+    var esq = '<h1>Calendário</h1>' +
+      '<p class="rotulo">Fonte: URL do feed do Canvas</p>' +
+      '<div class="linha"><input class="campo cresce" style="min-width:160px" value="https://canvas.exemplo.br/feeds/…ics">' +
+      '<button class="btn btn-cheio" data-acao="importar-feed">Salvar e importar</button>' +
+      '<button class="btn" data-acao="importar-feed">Atualizar agora</button></div>' +
+      '<p class="sub">' + (S.feedSalvo
+        ? 'Importado agora · 68 evento(s) do feed do Canvas.'
+        : 'Última importação: 04/09/2026 · 68 evento(s) · importa sozinho ao abrir se passou de 6 h.') + '</p>' +
+      '<div class="linha bloco"><button class="btn btn-peq">‹</button><b>setembro de 2026</b>' +
+      '<button class="btn btn-peq">›</button><button class="btn btn-peq">Hoje</button></div>' +
+      '<div class="chips"><span class="chip on">todos</span><span class="chip">Cálculo II</span><span class="chip">AEDS II</span><span class="chip">DIW</span><span class="chip">TI2</span></div>' +
+      '<div class="semana bloco">' + dias + '</div>' +
+      '<p class="sub">Cada barra é um evento do dia; o aulão confirmado entra com traço cheio.</p>';
+
+    var dir = '<h2>Eventos do mês</h2><p class="sub">sexta-feira, 05 de setembro</p>' +
+      '<div class="caixa bloco-p"><span class="txt-xp apagado">dia inteiro</span> <b>Atividade 06</b> <span class="chip">Cálculo II</span>' +
+      '<p class="bloco-xp"><button class="btn btn-peq">Canvas</button> <button class="btn btn-peq">Google</button> <button class="btn btn-peq">.ics</button></p></div>' +
+      '<div class="caixa bloco-p"><span class="txt-xp apagado">10:00</span> <b>Quiz — Complexidade</b> <span class="chip">AEDS II</span></div>';
+    if (S.aulaoMarcado){
+      dir += '<div class="caixa bloco-p borda-g"><span class="txt-xp apagado">19:00</span> <b>Aulão: ' + esc(S.temaAulao) + '</b>' +
+        '<p class="sub">18/09 · sala 201 · definido pela enquete da turma AEDS2</p></div>';
+    }
+    dir += '<h2 class="bloco-g">Assinar no seu app</h2>' +
+      '<input class="campo mono bloco-xp" value="https://…/feed?token=…">' +
+      '<p class="bloco-xp"><button class="btn btn-peq">Copiar</button> <button class="btn btn-peq btn-perigo">Gerar novo link</button></p>';
+
+    return '<div class="col-cal">' + '<div>' + esq + '</div><div>' + dir + '</div></div>';
+  };
+
+  telas.publicar = function(){
+    if (!equipe()){
+      return '<div class="caixa-trac centro"><b>Só monitores e professores publicam estudos.</b>' +
+        '<p class="sub">Seu cargo atual é <b>' + S.cargo + '</b>. Se isso está errado, fale com a coordenação da monitoria.</p>' +
+        '<p class="bloco-p"><button class="btn btn-cheio" data-ir="inicio">Voltar ao início</button></p></div>';
+    }
+    var form = '<h2>Publicar estudo</h2><p class="sub">O arquivo vai para o Storage e o cadastro para o banco.</p>' +
+      '<p class="rotulo">Título</p><input class="campo">' +
+      '<p class="rotulo">Descrição</p><textarea class="campo" rows="3"></textarea>' +
+      '<p class="rotulo">Disciplina</p><input class="campo" value="AEDS2 · Algoritmos e Estruturas de Dados II">' +
+      '<p class="rotulo">Arquivo HTML</p>' +
+      '<div class="linha"><button class="btn btn-peq">Escolher arquivo</button><span class="txt-xp fraco">até 5 MB, .html</span></div>' +
+      '<p class="bloco"><button class="btn btn-cheio">Publicar</button></p>';
+
+    var imp = '<h2>Importar estudos do repositório</h2>' +
+      '<p class="sub">Sobe para o Storage os estudos que ainda apontam para a pasta <span class="mono">estudos/</span>. Pode rodar de novo.</p>' +
+      '<p class="bloco-p"><button class="btn" data-acao="importar-lote">Importar</button></p>' +
+      '<div class="log">' + (S.importou
+        ? 'ok Java · Primeiros passos<br>ok C e C++ · Resumo AEDS I<br>ok Cálculo 2 · Guia de Integrais<br>ERRO arquivo sem título (segue o lote)<br>Concluído — 3 de 4.'
+        : '<span class="apagado">o log da importação aparece aqui, uma linha por arquivo</span>') + '</div>' +
+      '<p class="sub">Depois de publicar, a página vai direto para o estudo novo.</p>';
+
+    return '<h1>Publicar</h1><div class="col-cal bloco"><div>' + form + '</div><div>' + imp + '</div></div>';
+  };
+
+  telas.perfil = function(){
+    return '<h1>Meu perfil</h1><p class="sub">lorem.ipsum@sga.exemplo.br · <span class="chip">' + S.cargo + '</span></p>' +
+      '<p class="rotulo">Nome</p><input class="campo med-form" value="Lorem Ipsum">' +
+      '<p class="bloco-p"><button class="btn btn-cheio">Salvar nome</button> ' +
+      '<button class="btn btn-perigo" data-acao="sair">Sair</button></p>' +
+      '<h2 class="bloco-g">Favoritos</h2>' +
+      '<div class="linha pad-y div-b-fina"><span class="chip">CALC2</span><span class="cresce">Guia de Integrais</span><span class="txt-xp apagado">♥ favoritado</span></div>' +
+      '<div class="linha pad-y div-b-fina"><span class="chip">AEDS2</span><span class="cresce">Listas encadeadas</span><span class="txt-xp apagado">♥ favoritado</span></div>' +
+      '<h2 class="bloco-g">Progresso</h2>' +
+      '<div class="linha pad-y div-b-fina"><span class="chip">AEDS2</span><div class="fantasma cresce sem-margem"></div><span class="chip">estudando</span></div>' +
+      '<div class="linha pad-y div-b-fina"><span class="chip">AEDS1</span><div class="fantasma medio sem-margem"></div><span class="chip">concluído</span></div>' +
+      '<div class="aviso">O cargo (aluno · monitor · professor) muda só pelo painel do Supabase.</div>';
+  };
+
+  telas.config = function(){
+    var secoes = ['Perfil público','Conta e acesso','Notificações','Calendário','Aparência','Privacidade'];
+    var lado = secoes.map(function(sec){
+      return '<button class="item-lado pad-p txt-p' + (S.configSec===sec?' destaque':'') + '" data-sec="' + sec + '">' + sec + '</button>';
+    }).join('');
+
+    var corpo;
+    if (S.configSec === 'Notificações'){
+      corpo = '<h2>Notificações</h2><p class="sub">Escolha o que te avisa e por onde.</p>' +
+        Object.keys(S.notif).map(function(t){
+          return '<div class="caixa bloco-p"><div class="linha"><span class="cresce">' + t + '</span>' +
+            '<button class="switch" role="switch" aria-checked="' + (S.notif[t]?'true':'false') + '" data-switch="' + t + '" aria-label="' + t + '"></button></div></div>';
+        }).join('') +
+        '<p class="bloco"><button class="btn btn-cheio">Salvar</button> <button class="btn">Cancelar</button></p>';
+    } else {
+      corpo = '<h2>' + S.configSec + '</h2><p class="sub">Seção desenhada como wireframe; o conteúdo detalhado fica fora do escopo do protótipo.</p>' +
+        '<div class="caixa-trac vazio bloco">campos de ' + S.configSec.toLowerCase() + '</div>';
+    }
+    return '<h1>Configurações</h1><div class="col-lado bloco"><div class="div-d pr">' + lado + '</div><div>' + corpo + '</div></div>';
+  };
+
+  telas.fim1 = function(){
+    return '<div class="conclusao"><h2>Tarefa 1 concluída</h2>' +
+      '<p class="sub">Você entrou no sistema e voltou à página de origem. O cabeçalho agora mostra Calendário, Dúvidas &amp; Feedback, Mensagens e Notificações.</p>' +
+      '<p class="bloco"><button class="btn btn-cheio" data-acao="tarefa-2">Seguir para a tarefa 2</button> ' +
+      '<button class="btn" data-ir="inicio">Voltar ao início</button></p></div>';
+  };
+  telas.fim3 = function(){
+    return '<div class="conclusao"><h2>Tarefa 3 concluída</h2>' +
+      '<p class="sub">A dúvida foi enviada, respondida pelo monitor e marcada como útil. Ela passa a contar no painel “onde a turma mais trava”.</p>' +
+      '<p class="bloco"><button class="btn btn-cheio" data-ir="duvidas">Ver o painel da turma</button></p></div>';
+  };
+
+  function aba(id, rot, atual){ return '<button data-aba="' + id + '" class="' + (atual===id?'on':'') + '">' + rot + '</button>'; }
+  function barra(nome, pct, n){
+    return '<div class="barra-dado"><span class="nome">' + nome + '</span><span class="valor" style="width:' + pct + '%"></span><b>' + n + '</b></div>';
+  }
+  function opcaoVoto(rot, pct){
+    return '<div class="voto"><button data-acao="votar"><span class="preench" style="width:' + (S.votou?pct:0) + '%"></span>' +
+      '<span class="txt">' + rot + '</span></button><span class="pct">' + (S.votou ? pct + '%' : '—') + '</span></div>';
+  }
+
+  // ---------- render ----------
+  function desenhar(){
+    desenharNav();
+    el('menu-perfil').hidden = true; el('menu-notif').hidden = true; el('menu-ham').hidden = true;
+    el('tela').innerHTML = (telas[S.tela] || telas.inicio)();
+    el('dica-txt').textContent = (vistaCel ? DICAS_MOB : DICAS)[S.tarefa];
+    if (S.cargo !== cargoNoCelular){ cargoNoCelular = S.cargo; paraCelular({tipo:'cargo', v:S.cargo}); }
+  }
+
+  // ---------- eventos ----------
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    var fav = ev.target.closest('[data-fav]');
+    if (fav){
+      // F1: ação que exige conta leva para Entrar e volta para a origem
+      if (!logado()){ S.motivoLogin = 'Entre com sua conta para favoritar estudos.'; S.erroLogin = ''; S.erroGeral = ''; ir('entrar'); return; }
+      S.favoritos[fav.dataset.fav] = !S.favoritos[fav.dataset.fav]; desenhar(); return;
+    }
+
+    if (b.dataset.t){ S.tarefa = b.dataset.t; prepararTarefa(); return; }
+    if (b.dataset.ir){ if (b.dataset.ir === 'notificacoes') S.naoLidasNotif = 0; ir(b.dataset.ir); return; }
+    if (b.dataset.estudo){
+      var idx = ESTUDOS.map(function(e){ return String(e.id); }).indexOf(b.dataset.estudo);
+      S.estudoAberto = idx >= 0 ? idx : 1;
+      ir('estudo'); return;
+    }
+    if (b.dataset.aba){
+      if (S.tela === 'mensagens') S.aba.msg = b.dataset.aba; else S.aba.duv = b.dataset.aba;
+      desenhar(); return;
+    }
+    if (b.dataset.menu){ abrirMenu(b.dataset.menu); return; }
+    if (b.dataset.disc){ S.disc = b.dataset.disc; desenhar(); return; }
+    if (b.dataset.abaentrar){ S.abaEntrar = b.dataset.abaentrar; S.erroLogin = ''; S.erroGeral = ''; desenhar(); return; }
+    if (b.dataset.sec){ S.configSec = b.dataset.sec; desenhar(); return; }
+    if (b.dataset.conv){ S.convAberta = b.dataset.conv; desenhar(); return; }
+    if (b.dataset.switch){ S.notif[b.dataset.switch] = !S.notif[b.dataset.switch]; desenhar(); return; }
+
+    var a = b.dataset.acao;
+    if (!a) return;
+
+    if (a === 'login'){
+      var v = (el('email') && el('email').value || '').trim().toLowerCase();
+      S.email = v; S.erroGeral = '';
+      if (!/@(sga\.)?exemplo\.br$/.test(v)){
+        S.erroLogin = v ? 'Use seu e-mail institucional (@sga.exemplo.br ou @exemplo.br).' : 'Informe seu e-mail institucional.';
+        desenhar(); return;
+      }
+      S.erroLogin = '';
+      // F1 · “Credenciais corretas?”: no protótipo a senha certa é 123456
+      var senha = el('senha') ? el('senha').value : '';
+      if (S.abaEntrar === 'criar' && senha.length < 6){ S.erroGeral = 'A senha precisa ter pelo menos 6 caracteres.'; desenhar(); return; }
+      if (S.abaEntrar !== 'criar' && senha !== '123456'){ S.erroGeral = 'E-mail ou senha incorretos.'; desenhar(); return; }
+      S.motivoLogin = ''; S.cargo = 'aluno'; el('cargo').value = 'aluno';
+      S.naoLidasMsg = 1; S.naoLidasNotif = 1;
+      ir('fim1'); return;
+    }
+    if (a === 'tarefa-2'){ S.tarefa = '2'; prepararTarefa(); return; }
+    if (a === 'limpar'){ S.busca = ''; S.disc = 'todas'; desenhar(); return; }
+    if (a === 'voltar-lista'){ S.convAberta = null; desenhar(); return; }
+    if (a === 'importar-feed'){ S.feedSalvo = true; desenhar(); return; }
+    if (a === 'importar-lote'){ S.importou = true; desenhar(); return; }
+    if (a === 'pedir-material'){
+      S.assuntoPre = S.busca; S.aba.duv = 'enviar';
+      if (!logado()){ S.cargo = 'aluno'; el('cargo').value = 'aluno'; }
+      ir('duvidas'); return;
+    }
+    if (a === 'enviar-duvida'){ if (S.foraHorario) S.naFila = true; else S.pedidoEnviado = true; desenhar(); return; }
+    if (a === 'abrir-horario'){ S.naFila = false; S.pedidoEnviado = true; desenhar(); return; }
+    if (a === 'resolveu'){ S.aba.duv = 'turma'; desenhar(); return; }
+    if (a === 'simular-resposta'){ S.respostaChegou = true; S.naoLidasNotif += 1; S.naoLidasMsg += 1; ir('notificacoes'); return; }
+    if (a === 'util'){ S.naoLidasMsg = 0; ir('fim3'); return; }
+    if (a === 'nao-resolveu'){ S.respostaChegou = false; S.aba.msg = 'conversas'; desenhar(); return; }
+    if (a === 'abrir-enquete'){ S.enqueteAberta = true; desenhar(); return; }
+    if (a === 'votar'){ S.votou = true; desenhar(); return; }
+    if (a === 'encerrar-enquete'){ S.etapaAulao = 'definir'; S.temaAulao = 'Complexidade na prática'; S.desempate = false; S.conflito = false; desenhar(); return; }
+    if (a === 'simular-empate'){ S.etapaAulao = 'empate'; desenhar(); return; }
+    if (a === 'desempatar'){ S.temaAulao = b.dataset.tema; S.desempate = true; S.etapaAulao = 'definir'; S.conflito = false; desenhar(); return; }
+    if (a === 'data-aulao'){ S.dataAulao = b.dataset.dt; S.conflito = false; desenhar(); return; }
+    if (a === 'confirmar-aulao'){
+      // F4 · “Horário livre?”: 22/09 cai no dia da prova
+      if (S.dataAulao === '22'){ S.conflito = true; desenhar(); return; }
+      S.aulaoMarcado = true; S.etapaAulao = null; desenhar(); return;
+    }
+  });
+
+  document.addEventListener('input', function(ev){
+    if (ev.target.id === 'busca'){
+      S.busca = ev.target.value;
+      var pos = ev.target.selectionStart;
+      desenhar();
+      var novo = el('busca'); if (novo){ novo.focus(); novo.setSelectionRange(pos, pos); }
+    }
+    if (ev.target.id === 'assunto') S.assuntoPre = ev.target.value;
+    if (ev.target.id === 'email') S.email = ev.target.value;
+  });
+
+  // ---------- versao mobile ----------
+  // desktop e celular sao dois apps; o cargo e a tarefa andam juntos pelos dois via postMessage
+  var vistaCel = false, cargoNoCelular = S.cargo, fone = el('fone');
+  function paraCelular(msg){
+    msg.hub = 1;
+    if (fone && fone.contentWindow) fone.contentWindow.postMessage(msg, '*');
+  }
+  window.addEventListener('message', function(ev){
+    if (!fone || ev.source !== fone.contentWindow || !ev.data || ev.data.hub !== 1) return;
+    if (ev.data.tipo === 'pronto'){
+      paraCelular({tipo:'tarefa', v:S.tarefa});
+      paraCelular({tipo:'horario', v:S.foraHorario});
+      cargoNoCelular = S.cargo;
+    }
+    if (ev.data.tipo === 'cargo' && ev.data.v !== S.cargo){
+      S.cargo = cargoNoCelular = ev.data.v;
+      el('cargo').value = S.cargo;
+      if (!logado() && S.tela !== 'inicio' && S.tela !== 'entrar') S.tela = 'inicio';
+      desenhar();
+    }
+  });
+
+  el('vista').addEventListener('click', function(){
+    vistaCel = !vistaCel;
+    this.setAttribute('aria-pressed', vistaCel ? 'true' : 'false');
+    this.textContent = vistaCel ? 'Ver no desktop' : 'Ver no celular';
+    el('app').hidden = vistaCel;
+    el('celular').hidden = !vistaCel;
+    desenhar();
+    window.scrollTo({top:0});
+  });
+
+  el('cargo').addEventListener('change', function(){
+    S.cargo = this.value;
+    if (S.cargo === 'visitante'){ S.naoLidasMsg = 0; S.naoLidasNotif = 0; if (S.tela !== 'inicio' && S.tela !== 'entrar') S.tela = 'inicio'; }
+    desenhar();
+  });
+
+  el('horario').addEventListener('change', function(){
+    S.foraHorario = this.value === 'fora';
+    paraCelular({tipo:'horario', v:S.foraHorario});
+    desenhar();
+  });
+
+  function botaoMenu(rot, tela){ return '<button data-ir="' + tela + '">' + rot + '</button>'; }
+  function abrirMenu(qual){
+    var p = el('menu-perfil'), n = el('menu-notif'), hm = el('menu-ham');
+    if (qual === 'ham'){
+      p.hidden = true; n.hidden = true;
+      hm.hidden = !hm.hidden;
+      var itens = [botaoMenu('Início','inicio'), botaoMenu('Calendário','calendario'), botaoMenu('Dúvidas &amp; Feedback','duvidas')];
+      if (equipe()) itens.push(botaoMenu('Publicar','publicar'));
+      hm.innerHTML = itens.join('') + '<div class="sep"></div>' +
+        '<div class="pad-p linha"><span class="avatar" style="width:var(--e5);height:var(--e5)"></span><b>Lorem Ipsum</b></div>' +
+        botaoMenu('Meu perfil','perfil') + botaoMenu('Configurações','config') +
+        '<div class="sep"></div><button data-acao="sair" style="color:var(--nota)">Sair</button>';
+      return;
+    }
+    hm.hidden = true;
+    if (qual === 'perfil'){
+      n.hidden = true;
+      p.hidden = !p.hidden;
+      p.innerHTML = '<div class="pad-p"><b>Lorem Ipsum</b><div class="sub">' + S.cargo + ' · sga.exemplo.br</div></div>' +
+        '<div class="sep"></div><button data-ir="perfil">Meu perfil</button><button data-ir="perfil">Meus favoritos</button>' +
+        '<div class="sep"></div><button data-ir="config">Configurações</button>' +
+        '<div class="sep"></div><button data-acao="sair" style="color:var(--nota)">Sair</button>';
+    } else {
+      p.hidden = true;
+      n.hidden = !n.hidden;
+      S.naoLidasNotif = 0;
+      n.innerHTML = '<div class="pad-p"><b>Notificações</b></div>' +
+        (S.respostaChegou ? '<button data-ir="mensagens"><b>Ipsum (monitor)</b> respondeu seu pedido #143<div class="sub">há 6 min</div></button>' : '') +
+        (S.enqueteAberta && !equipe() ? '<button data-ir="duvidas"><b>Enquete aberta</b> — tema do aulão<div class="sub">há 5 h</div></button>' : '') +
+        '<button data-ir="inicio">Novo estudo em CALC2<div class="sub">ontem</div></button>' +
+        '<div class="sep"></div><button data-ir="notificacoes" class="centro">Ver todas</button>';
+      desenharNav();
+      n.hidden = false;
+    }
+  }
+  document.addEventListener('click', function(ev){
+    if (ev.target.closest('[data-acao="sair"]')){ S.cargo = 'visitante'; el('cargo').value = 'visitante'; ir('inicio'); }
+  });
+
+  function prepararTarefa(){
+    Array.prototype.forEach.call(document.querySelectorAll('#tarefas button'), function(b){
+      b.setAttribute('aria-pressed', b.dataset.t === S.tarefa ? 'true' : 'false');
+    });
+    if (S.tarefa === '1'){ S.cargo = 'visitante'; S.busca = ''; S.erroLogin = ''; S.erroGeral = ''; S.motivoLogin = ''; S.email = ''; S.favoritos = {}; S.abaEntrar = 'entrar'; S.tela = 'inicio'; }
+    if (S.tarefa === '2'){ S.cargo = 'aluno'; S.busca = ''; S.tela = 'inicio'; }
+    if (S.tarefa === '3'){ S.cargo = 'aluno'; S.aba.duv = 'turma'; S.pedidoEnviado = false; S.respostaChegou = false; S.naFila = false; S.tela = 'duvidas'; }
+    if (S.tarefa === '4'){ S.cargo = 'monitor'; S.aba.duv = 'turma'; S.enqueteAberta = false; S.aulaoMarcado = false; S.etapaAulao = null; S.temaAulao = 'Complexidade na prática'; S.dataAulao = '18'; S.conflito = false; S.desempate = false; S.tela = 'duvidas'; }
+    el('cargo').value = S.cargo;
+    paraCelular({tipo:'tarefa', v:S.tarefa});
+    cargoNoCelular = S.cargo;
+    desenhar();
+  }
+
+  // ?tarefa=1..4 coloca as duas versões no ponto de partida; ?vista=celular abre o mobile
+  var params = new URLSearchParams(location.search);
+  if (/^[1-4]$/.test(params.get('tarefa') || '')){ S.tarefa = params.get('tarefa'); prepararTarefa(); }
+  desenhar();
+  if (params.get('vista') === 'celular') el('vista').click();
+})();
+</script>
