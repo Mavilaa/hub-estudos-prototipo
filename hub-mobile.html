@@ -1,0 +1,1355 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Hub de Estudos · Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.13"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+</style>
+<style>
+  html, body { background:#f3f4f6; color:#111827; }
+  body { font-family:"Inter", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  .rolagem::-webkit-scrollbar { width:4px; height:4px; }
+  .rolagem::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:4px; }
+  .rolagem::-webkit-scrollbar-track { background:transparent; }
+  .rolagem { scrollbar-width:thin; scrollbar-color:#d1d5db transparent; }
+  .sem-barra::-webkit-scrollbar { display:none; }
+  .sem-barra { scrollbar-width:none; }
+  button, [role="button"] { cursor:pointer; }
+  :focus-visible { outline:2px solid #111827; outline-offset:2px; }
+  .tab-num { font-variant-numeric:tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+  /* dentro do protótipo desktop (?embed=1) só o aparelho aparece; a moldura é do iframe */
+  html.embed, html.embed body { background:#fff; }
+  html.embed #painel { display:none; }
+  html.embed #palco { display:block; min-height:0; padding:0; }
+  html.embed #fone { width:100%; height:100vh; border:0; border-radius:0; box-shadow:none; }
+</style>
+
+<div id="palco" class="min-h-screen flex items-start justify-center gap-10 p-8 max-[480px]:p-0">
+  <aside id="painel" class="w-64 shrink-0 pt-10 max-[900px]:hidden">
+    <p class="font-mono text-[11px] uppercase tracking-wider text-gray-400">Protótipo · mobile</p>
+    <h1 class="text-lg font-semibold text-gray-900 mt-1">Hub de Estudos</h1>
+    <p class="text-sm text-gray-500 mt-2 leading-relaxed">Visual do projeto do Figma com as features do protótipo desktop. Frame 390 × 844.</p>
+
+    <label class="block mt-6 text-xs font-medium text-gray-700" for="cargo">Ver como</label>
+    <select id="cargo" class="mt-1.5 w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm">
+      <option value="visitante">Visitante (sem login)</option>
+      <option value="aluno" selected>Aluno</option>
+      <option value="monitor">Monitor</option>
+      <option value="professor">Professor</option>
+    </select>
+    <p class="text-xs text-gray-400 mt-2 leading-relaxed">Monitor e professor têm as mesmas permissões: publicar estudos, abrir enquetes, marcar revisado.</p>
+
+    <label class="block mt-5 text-xs font-medium text-gray-700" for="horario">Horário simulado</label>
+    <select id="horario" class="mt-1.5 w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm">
+      <option value="dentro">14:00 · monitoria aberta</option>
+      <option value="fora">23:10 · fora do horário</option>
+    </select>
+
+    <div class="mt-6 border-t border-gray-200 pt-5 space-y-2">
+      <p class="font-mono text-[11px] uppercase tracking-wider text-gray-400">Tarefas do teste</p>
+      <button data-roteiro="1" class="w-full text-left text-sm text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:border-gray-500 transition-all">1 · Entrar</button>
+      <button data-roteiro="2" class="w-full text-left text-sm text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:border-gray-500 transition-all">2 · Achar material</button>
+      <button data-roteiro="3" class="w-full text-left text-sm text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:border-gray-500 transition-all">3 · Tirar dúvida</button>
+      <button data-roteiro="4" class="w-full text-left text-sm text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:border-gray-500 transition-all">4 · Abrir enquete</button>
+    </div>
+    <p class="text-xs text-gray-400 mt-6 leading-relaxed">Todas as telas lado a lado para importar no Figma: abra este arquivo com <span class="font-mono text-gray-600">#quadro</span> no fim do endereço.</p>
+  </aside>
+
+  <div id="fone" class="relative w-[390px] h-[844px] bg-white border border-gray-200 rounded-[28px] overflow-hidden flex flex-col shadow-sm max-[480px]:w-full max-[480px]:h-[100dvh] max-[480px]:rounded-none max-[480px]:border-0"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var EMBED = /[?&]embed=1/.test(location.search) && window.parent !== window;
+if (EMBED) document.documentElement.classList.add('embed');
+var cargoAvisado = null;
+
+/* ============================== ícones ============================== */
+var P = {
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  book:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/><path d="M8 7h8"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  heart:'<path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6z"/>',
+  back:'<path d="m15 18-6-6 6-6"/>',
+  right:'<path d="m9 18 6-6-6-6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>',
+  more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  comment:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  access:'<circle cx="12" cy="4.5" r="1.5"/><path d="M5 8h14M12 8v6M9 21l3-7 3 7"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'
+};
+function ic(n, c){ return '<svg class="' + (c||'w-5 h-5') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[n] + '</svg>'; }
+function icFill(n, c){ return '<svg class="' + (c||'w-5 h-5') + '" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">' + P[n] + '</svg>'; }
+
+/* ============================== dados ============================== */
+var USUARIO = { nome:'Lorem Ipsum', primeiro:'Lorem', iniciais:'LI', email:'lorem.ipsum@sga.exemplo.br', matricula:'2025010234', turno:'Noturno', periodo:'2º período', curso:'Ciência da Computação' };
+
+var MATERIAS = [
+  { id:'cdi', sigla:'CDI I', nome:'Cálculo Diferencial e Integral I', prof:'Prof. Lorem Dolor', prog:68, nota:7.4, cred:6,
+    topicos:[['Limites e continuidade',1],['Limites laterais',1],['Derivada pela definição',1],['Regras de derivação',1],['Regra da cadeia',1],['Derivação implícita',0],['Aplicações da derivada',0],['Integral indefinida',0]] },
+  { id:'fis', sigla:'FÍS EXP', nome:'Física Experimental', prof:'Prof.ª Sit Amet', prog:55, nota:8.2, cred:2,
+    topicos:[['Teoria de erros',1],['Algarismos significativos',1],['Pêndulo simples',1],['Lançamento horizontal',0],['Colisões',0],['Relatório final',0]] },
+  { id:'poo', sigla:'POO', nome:'Programação Orientada a Objetos', prof:'Prof. Consectetur Elit', prog:72, nota:8.6, cred:4,
+    topicos:[['Classes e objetos',1],['Encapsulamento',1],['Herança',1],['Polimorfismo',1],['Classes abstratas',0],['Interfaces',0],['Tratamento de exceções',0]] },
+  { id:'ing', sigla:'INGLÊS', nome:'Inglês Técnico', prof:'Prof.ª Adipiscing Sed', prog:80, nota:9.1, cred:2,
+    topicos:[['Estratégias de leitura',1],['Cognatos e falsos cognatos',1],['Grupos nominais',1],['Leitura de papers',1],['Abstracts',0]] },
+  { id:'fil', sigla:'FILOSOFIA', nome:'Filosofia da Ciência', prof:'Prof. Tempor Incididunt', prog:45, nota:6.6, cred:2,
+    topicos:[['O que é ciência',1],['Indução e o problema de Hume',1],['Popper e a falseabilidade',0],['Kuhn e as revoluções científicas',0],['Feyerabend',0]] },
+  { id:'alg', sigla:'ÁLG LIN', nome:'Álgebra Linear', prof:'Prof.ª Magna Aliqua', prog:50, nota:6.9, cred:4,
+    topicos:[['Matrizes e operações',1],['Sistemas lineares',1],['Determinantes',1],['Espaços vetoriais',0],['Transformações lineares',0],['Autovalores e autovetores',0]] }
+];
+function materia(id){ return MATERIAS.filter(function(m){ return m.id === id; })[0]; }
+function materiaPorSigla(s){ return MATERIAS.filter(function(m){ return m.sigla === s; })[0]; }
+
+// semana de 07 a 13/09/2026 · hoje é sexta, 11
+var TAREFAS = [
+  { id:1, dia:7,  titulo:'Lista 3 — Limites laterais',      mat:'cdi', tipo:'Lista',     hora:'23:59', prog:100, valor:5,  ganho:4.5, perdido:0.5 },
+  { id:2, dia:8,  titulo:'Relatório — Pêndulo simples',     mat:'fis', tipo:'Relatório', hora:'18:00', prog:100, valor:10, ganho:8.5, perdido:1.5 },
+  { id:3, dia:9,  titulo:'Quiz — Encapsulamento',           mat:'poo', tipo:'Quiz',      hora:'10:00', prog:100, valor:4,  ganho:4,   perdido:0 },
+  { id:4, dia:10, titulo:'Reading assignment 2',            mat:'ing', tipo:'Leitura',   hora:'23:59', prog:80,  valor:5,  ganho:null, perdido:null },
+  { id:5, dia:11, titulo:'Lista 4 — Regra da cadeia',       mat:'cdi', tipo:'Lista',     hora:'23:59', prog:68,  valor:5,  ganho:null, perdido:null },
+  { id:6, dia:12, titulo:'Resenha — Popper',                mat:'fil', tipo:'Resenha',   hora:'20:00', prog:30,  valor:10, ganho:null, perdido:null },
+  { id:7, dia:13, titulo:'Exercícios — Matrizes inversas',  mat:'alg', tipo:'Lista',     hora:'23:59', prog:10,  valor:5,  ganho:null, perdido:null }
+];
+// eventos do mês que não são tarefas da semana acima
+var EVENTOS_MES = [
+  { dia:3,  titulo:'Lista 2 — Continuidade', mat:'cdi', hora:'23:59', tipo:'Lista' },
+  { dia:4,  titulo:'Aula prática — Erros',   mat:'fis', hora:'19:00', tipo:'Aula' },
+  { dia:14, titulo:'P1 — Cálculo I',          mat:'cdi', hora:'19:00', tipo:'Prova' },
+  { dia:16, titulo:'Trabalho — Herança',      mat:'poo', hora:'23:59', tipo:'Trabalho' },
+  { dia:22, titulo:'Prova — Álgebra Linear',  mat:'alg', hora:'19:00', tipo:'Prova' },
+  { dia:25, titulo:'Seminário — Kuhn',        mat:'fil', hora:'20:40', tipo:'Seminário' }
+];
+
+var ESTUDOS = [
+  { id:1, mat:'cdi', titulo:'Regra da cadeia sem decoreba', desc:'Como enxergar a função de dentro e a de fora, com 6 exemplos resolvidos.', autor:'Prof. Lorem Dolor', papel:'Professor', data:'09 set', com:2, fav:12, revisado:true },
+  { id:2, mat:'poo', titulo:'Herança e polimorfismo em Java', desc:'Quando estender, quando usar interface e o que o @Override realmente faz.', autor:'Ipsum Dolor', papel:'Monitor', data:'06 set', com:5, fav:9, revisado:true },
+  { id:3, mat:'alg', titulo:'Matriz inversa por Gauss-Jordan', desc:'Passo a passo com a matriz aumentada [A | I] e os erros mais comuns.', autor:'Dolor Sit', papel:'Aluno', data:'05 set', com:1, fav:4, revisado:false },
+  { id:4, mat:'fis', titulo:'Como escrever o relatório de laboratório', desc:'Estrutura, tabela de medidas, propagação de incerteza e gráfico.', autor:'Prof.ª Sit Amet', papel:'Professor', data:'02 set', com:3, fav:15, revisado:true },
+  { id:5, mat:'cdi', titulo:'Limites laterais — lista resolvida', desc:'Os 12 exercícios da Lista 3 com o raciocínio de cada um.', autor:'Consectetur Elit', papel:'Aluno', data:'01 set', com:3, fav:6, revisado:false },
+  { id:6, mat:'ing', titulo:'Vocabulário para ler papers', desc:'Os 80 termos que mais aparecem em abstracts de computação.', autor:'Adipiscing Sed', papel:'Monitor', data:'28 ago', com:0, fav:7, revisado:true }
+];
+function estudo(id){ return ESTUDOS.filter(function(e){ return e.id === id; })[0]; }
+
+var COMENTARIOS = {
+  1:[{ nome:'Ipsum Dolor', papel:'Monitor', data:'10 set', texto:'O exemplo 4 é o que mais cai. Vale refazer sem olhar a resolução.' },
+     { nome:'Tempor Magna', papel:'Aluno', data:'10 set', texto:'Finalmente entendi por que multiplica pela derivada de dentro.' }],
+  2:[{ nome:'Sit Amet', papel:'Aluno', data:'07 set', texto:'Dá para acrescentar um exemplo com classe abstrata?' }]
+};
+
+var CONVERSAS = [
+  { id:'lorem', nome:'Prof. Lorem Dolor', papel:'Professor', tipo:'pessoa', online:true, hora:'18:52', nao:2, atende:'seg–sex, 8 h às 22 h',
+    msgs:[{de:'outro', t:'Boa noite! Lembrando que a P1 é segunda, 14/09, às 19 h.', h:'18:50'},{de:'outro', t:'Cobre até regra da cadeia. Derivação implícita fica para a P2.', h:'18:52'}] },
+  { id:'ipsum', nome:'Ipsum Dolor', papel:'Monitor', sub:'CDI I', tipo:'pessoa', online:true, hora:'17:10', nao:0, atende:'todos os dias, 8 h às 22 h',
+    msgs:[{de:'eu', t:'Na derivação implícita de x² + y² = 25, por que dy/dx fica −x/y?', h:'17:10'}] },
+  { id:'cdi-sala', nome:'CDI I · turma 02', topico:'# regra-da-cadeia', tipo:'sala', hora:'16:40', nao:5,
+    msgs:[{de:'outro', autor:'Tempor', t:'Alguém fez o 7 da Lista 4?', h:'16:31'},{de:'outro', autor:'Magna', t:'Fiz. Chama u = 3x² + 1 que sai rápido.', h:'16:38'},{de:'eu', t:'Valeu, era isso que faltava.', h:'16:40'}] },
+  { id:'dolor', nome:'Dolor Sit', papel:'Aluno', tipo:'pessoa', online:false, hora:'ontem', nao:0,
+    msgs:[{de:'outro', t:'Bora estudar Álgebra amanhã na biblioteca?', h:'21:14'},{de:'eu', t:'Bora, depois das 14 h.', h:'21:20'}] },
+  { id:'sit', nome:'Sit Amet', papel:'Monitor', sub:'POO', tipo:'pessoa', online:false, hora:'ontem', nao:0, atende:'seg–sex, 14 h às 18 h', fora:true,
+    msgs:[{de:'eu', t:'Oi! Posso tirar uma dúvida de interface x classe abstrata?', h:'19:40'}] },
+  { id:'poo-sala', nome:'POO · turma 01', topico:'# heranca', tipo:'sala', hora:'seg', nao:0,
+    msgs:[{de:'outro', autor:'Consectetur', t:'Subi o exemplo de polimorfismo no Hub.', h:'10:02'}] }
+];
+function conversa(id){ return CONVERSAS.filter(function(c){ return c.id === id; })[0]; }
+
+var AVALIACOES = [
+  { nome:'Tempor Magna', papel:'Aluno', nota:5, cat:'Calendário', data:'10 set', texto:'Importar do Canvas me salvou. Vejo a semana inteira sem abrir três sites.' },
+  { nome:'Ipsum Dolor', papel:'Monitor', nota:5, cat:'Chat', data:'09 set', texto:'O horário de atendimento no chat acabou com mensagem de madrugada. As dúvidas chegam organizadas.' },
+  { nome:'Consectetur Elit', papel:'Aluno', nota:4, cat:'Matérias', data:'08 set', texto:'Os tópicos com check ajudam a ver o que falta. Queria poder anotar em cada um.' },
+  { nome:'Aliqua Veniam', papel:'Aluno', nota:4, cat:'Geral', data:'06 set', texto:'Limpo e rápido. Só senti falta de modo escuro no celular.' },
+  { nome:'Sit Amet', papel:'Monitor', nota:5, cat:'Geral', data:'04 set', texto:'O painel de onde a turma mais trava define o tema do aulão em minutos.' },
+  { nome:'Dolor Sit', papel:'Aluno', nota:3, cat:'Chat', data:'02 set', texto:'As salas por tópico são boas, mas as notificações das turmas vêm todas juntas.' }
+];
+
+var NOTIF_ITENS = ['Respostas às minhas dúvidas','Mensagens de monitores e professores','Enquetes e aulões da minha turma','Novos estudos nas minhas matérias'];
+
+var DIAS_SEM = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+var DIAS_LONGO = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+
+/* ============================== estado ============================== */
+var INICIAL = {
+  cargo:'aluno', tab:'inicio', tela:null, pilha:[], motivo:'',
+  // calendário
+  calVista:'semana', semana:0, diaSel:null, tarefa:null, calMat:'todas', mesDia:11, feedSalvo:false, copiado:false,
+  // matérias e estudos
+  matAba:'materias', buscaMat:'', materia:null, buscaEst:'', estMat:'todas', favs:{1:true,4:true}, estudo:1, sheet:false,
+  estStatus:{1:'Estudando'}, comentarioNovo:'', excluidos:{}, revisados:{}, importou:false, publicado:false,
+  // chat
+  chatAba:'conversas', conv:null, rascunho:'', resolvido:null, caixaFiltro:'Caixa de entrada',
+  // dúvidas & feedback
+  fbAba:'turma', fbMat:'CDI I', enqueteAberta:false, votou:false, voto:null, pedidoEnviado:false, respostaChegou:false, aulaoMarcado:false,
+  // caminhos alternativos e de erro dos fluxos F3 e F4
+  foraHorario:false, naFila:false, etapaAulao:null, temaAulao:'Regra da cadeia na prática', dataAulao:'18', conflito:false, desempate:false,
+  tipoEnvio:'Dúvida de matéria', assunto:'', avalNota:0, avalCat:'Geral', avalTexto:'', avalFiltro:'Todas', minhaAval:null,
+  // config
+  cfgSec:null, notif:{ 'Respostas às minhas dúvidas':[true,true], 'Mensagens de monitores e professores':[true,false], 'Enquetes e aulões da minha turma':[true,true], 'Novos estudos nas minhas matérias':[false,true] },
+  tema:'Claro', densidade:'Confortável', fonte:'Média', idioma:'Português (Brasil)',
+  visibilidade:'Colegas da turma', online:true, rastreio:false,
+  a11y:{ 'Alto contraste':false, 'Reduzir animações':false, 'Otimizar para leitor de tela':false, 'Atalhos de teclado':true, 'Destaque de foco reforçado':false },
+  twofa:true, sessoes:2, confirmarExclusao:false,
+  // entrar
+  entrarAba:'entrar', erroLogin:'', erroGeral:'', email:'',
+  // avisos
+  notifLidas:false, toast:''
+};
+var S = clone(INICIAL);
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function logado(){ return S.cargo !== 'visitante'; }
+function equipe(){ return S.cargo === 'monitor' || S.cargo === 'professor'; }
+function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function num(n, casas){ return n.toFixed(casas === undefined ? 1 : casas).replace('.', ','); }
+function iniciais(n){ return n.replace(/^Prof\.ª? /,'').split(' ').map(function(p){ return p[0]; }).slice(0,2).join(''); }
+
+/* ============================== peças ============================== */
+function btn(rot, attrs, tipo, extra){
+  var base = 'inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg text-sm font-medium transition-all ';
+  var t = tipo === 'sec' ? 'bg-white border border-gray-200 text-gray-900 hover:border-gray-500'
+        : tipo === 'ghost' ? 'text-gray-600 hover:bg-gray-100'
+        : tipo === 'perigo' ? 'bg-white border border-gray-200 text-red-600 hover:border-red-300'
+        : 'bg-gray-900 text-white hover:bg-gray-800';
+  return '<button ' + (attrs||'') + ' class="' + base + t + ' ' + (extra||'') + '">' + rot + '</button>';
+}
+function card(inner, extra){ return '<div class="bg-white border border-gray-200 rounded-xl ' + (extra||'p-4') + '">' + inner + '</div>'; }
+function rotulo(t, extra){ return '<p class="font-mono text-[11px] uppercase tracking-wider text-gray-400 ' + (extra||'') + '">' + t + '</p>'; }
+function barra(pct, extra){ return '<div class="h-1.5 bg-gray-100 rounded-full overflow-hidden ' + (extra||'') + '"><div class="h-full bg-gray-900 rounded-full" style="width:' + pct + '%"></div></div>'; }
+function sigla(s){ return '<span class="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 whitespace-nowrap">' + s + '</span>'; }
+function papel(p){ return '<span class="font-mono text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-md border border-gray-200 text-gray-500 whitespace-nowrap">' + p + '</span>'; }
+function chip(rot, on, attrs){
+  return '<button ' + attrs + ' class="h-8 px-3 rounded-full text-xs font-medium whitespace-nowrap border transition-all ' +
+    (on ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-500') + '">' + rot + '</button>';
+}
+function chips(lista, atual, chave){
+  return '<div class="flex gap-2 overflow-x-auto sem-barra -mx-6 px-6">' + lista.map(function(i){
+    return chip(i, i === atual, 'data-a="' + chave + '" data-v="' + esc(i) + '"');
+  }).join('') + '</div>';
+}
+function segmentado(itens, atual, chave){
+  return '<div class="grid bg-gray-100 p-1 rounded-lg" style="grid-template-columns:repeat(' + itens.length + ',minmax(0,1fr))">' + itens.map(function(i){
+    var id = i[0], r = i[1], on = id === atual;
+    return '<button data-a="' + chave + '" data-v="' + id + '" class="h-8 rounded-md text-xs font-medium transition-all ' +
+      (on ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900') + '">' + r + '</button>';
+  }).join('') + '</div>';
+}
+function toggle(on, attrs, rot){
+  return '<button role="switch" aria-checked="' + on + '" aria-label="' + esc(rot) + '" ' + attrs + ' class="relative w-10 h-6 rounded-full shrink-0 transition-all ' + (on ? 'bg-gray-900' : 'bg-gray-200') + '">' +
+    '<span class="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ' + (on ? 'left-5' : 'left-1') + '"></span></button>';
+}
+function campo(rot, attrs, extra){
+  return '<label class="block"><span class="text-xs font-medium text-gray-700">' + rot + '</span>' +
+    '<input ' + attrs + ' class="mt-1.5 w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-900 ' + (extra||'') + '"></label>';
+}
+function area(rot, attrs, valor){
+  return '<label class="block"><span class="text-xs font-medium text-gray-700">' + rot + '</span>' +
+    '<textarea ' + attrs + ' rows="3" class="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-900 resize-none">' + (valor||'') + '</textarea></label>';
+}
+function selecao(rot, opcoes, atual, attrs){
+  return '<label class="block"><span class="text-xs font-medium text-gray-700">' + rot + '</span>' +
+    '<select ' + attrs + ' class="mt-1.5 w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:border-gray-900">' +
+    opcoes.map(function(o){ return '<option' + (o === atual ? ' selected' : '') + '>' + o + '</option>'; }).join('') + '</select></label>';
+}
+function voltar(rot, acao){
+  return '<button data-a="' + (acao||'voltar') + '" class="inline-flex items-center gap-1 -ml-1.5 h-8 pr-2 rounded-lg text-sm text-gray-500 hover:text-gray-900">' + ic('back','w-4 h-4') + rot + '</button>';
+}
+function titulo(t, sub){ return '<h1 class="text-xl font-semibold text-gray-900 tracking-tight">' + t + '</h1>' + (sub ? '<p class="text-sm text-gray-500 mt-1">' + sub + '</p>' : ''); }
+function estrelas(n, tam){
+  var s = '';
+  for (var i = 1; i <= 5; i++) s += (i <= Math.round(n) ? icFill('star', (tam||'w-3.5 h-3.5') + ' text-gray-900') : ic('star', (tam||'w-3.5 h-3.5') + ' text-gray-300'));
+  return '<span class="inline-flex gap-0.5">' + s + '</span>';
+}
+function avatar(nome, tam, quadrado){
+  return '<span class="' + (tam||'w-10 h-10 text-xs') + ' shrink-0 grid place-items-center bg-gray-100 text-gray-600 font-medium ' + (quadrado ? 'rounded-lg font-mono' : 'rounded-full') + '">' + (quadrado ? '#' : iniciais(nome)) + '</span>';
+}
+function vazio(tituloTxt, sub, acoes){
+  return '<div class="border border-dashed border-gray-300 rounded-xl px-6 py-8 text-center">' +
+    '<p class="text-sm font-medium text-gray-900">' + tituloTxt + '</p><p class="text-sm text-gray-500 mt-1 leading-relaxed">' + sub + '</p>' +
+    (acoes ? '<div class="flex flex-wrap justify-center gap-2 mt-4">' + acoes + '</div>' : '') + '</div>';
+}
+
+/* ============================== casca ============================== */
+function naoLidasChat(){
+  var n = 0;
+  CONVERSAS.forEach(function(c){ n += c.nao; });
+  if (S.respostaChegou && S.resolvido === null) n += 1;
+  return n;
+}
+function notificacoes(){
+  var l = [];
+  if (S.respostaChegou) l.push({ tipo:'Respostas', txt:'<b class="font-medium text-gray-900">Ipsum Dolor</b> respondeu seu pedido #143', quando:'há 6 min', a:'abrir-conv', v:'ipsum', nova:true });
+  if (S.enqueteAberta && !equipe()) l.push({ tipo:'Enquetes', txt:'<b class="font-medium text-gray-900">Enquete aberta</b> — escolha o tema do aulão de CDI I', quando:'há 2 h', a:'ir-fb', v:'turma', nova:true });
+  if (S.aulaoMarcado) l.push({ tipo:'Enquetes', txt:'<b class="font-medium text-gray-900">Aulão marcado:</b> ' + esc(S.temaAulao) + ' · 18/09, 19 h', quando:'há 1 h', a:'ir-cal-mes', v:'', nova:true });
+  l.push({ tipo:'Respostas', txt:'<b class="font-medium text-gray-900">Prof. Lorem Dolor</b> enviou 2 mensagens sobre a P1', quando:'há 1 h', a:'abrir-conv', v:'lorem', nova:!S.notifLidas });
+  l.push({ tipo:'Estudos', txt:'Novo estudo em <b class="font-medium text-gray-900">CDI I</b>: Regra da cadeia sem decoreba', quando:'ontem', a:'abrir-estudo', v:'1', nova:!S.notifLidas });
+  l.push({ tipo:'Estudos', txt:'Seu favorito <b class="font-medium text-gray-900">Relatório de laboratório</b> foi revisado', quando:'02 set', a:'abrir-estudo', v:'4', nova:false });
+  return l;
+}
+function naoLidasNotif(){ return notificacoes().filter(function(n){ return n.nova; }).length; }
+
+function cabecalho(){
+  var dir;
+  if (logado()){
+    var n = naoLidasNotif();
+    dir = '<button data-a="abrir-notif" aria-label="Notificações" class="relative w-9 h-9 grid place-items-center rounded-lg text-gray-600 hover:bg-gray-100">' + ic('bell') +
+      (n ? '<span class="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-gray-900 text-white font-mono text-[10px] leading-4 text-center">' + n + '</span>' : '') + '</button>' +
+      '<button data-a="abrir-perfil" aria-label="Meu perfil" class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 text-xs font-medium grid place-items-center hover:ring-2 hover:ring-gray-300">' + USUARIO.iniciais + '</button>';
+  } else {
+    dir = btn('Entrar', 'data-a="ir-entrar"', null, 'h-8 px-3 text-xs');
+  }
+  return '<header class="h-14 shrink-0 px-5 flex items-center gap-2 border-b border-gray-200 bg-white">' +
+    '<button data-a="tab" data-v="inicio" class="flex items-center gap-2 mr-auto">' +
+    '<span class="w-7 h-7 rounded-lg bg-gray-900 text-white font-mono text-[11px] font-medium grid place-items-center">HE</span>' +
+    '<span class="text-sm font-semibold text-gray-900">Hub de Estudos</span></button>' + dir + '</header>';
+}
+
+var ABAS = [['inicio','Início','home'],['calendario','Calendário','calendar'],['materias','Matérias','book'],['chat','Chat','chat'],['feedback','Feedback','star'],['config','Config','settings']];
+function barraInferior(){
+  var nChat = logado() ? naoLidasChat() : 0;
+  return '<nav class="h-16 shrink-0 grid grid-cols-6 border-t border-gray-200 bg-white px-1" aria-label="Navegação principal">' + ABAS.map(function(a){
+    var on = S.tab === a[0];
+    return '<button data-a="tab" data-v="' + a[0] + '" aria-current="' + (on ? 'page' : 'false') + '" class="relative flex flex-col items-center justify-center gap-1 ' + (on ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600') + '">' +
+      (on ? '<span class="absolute top-0 w-6 h-0.5 rounded-full bg-gray-900"></span>' : '') +
+      ic(a[2], 'w-5 h-5') + '<span class="text-[10px] ' + (on ? 'font-medium' : '') + '">' + a[1] + '</span>' +
+      (a[0] === 'chat' && nChat ? '<span class="absolute top-2 left-1/2 ml-1.5 min-w-4 h-4 px-1 rounded-full bg-gray-900 text-white font-mono text-[10px] leading-4 text-center">' + nChat + '</span>' : '') +
+      '</button>';
+  }).join('') + '</nav>';
+}
+
+/* ============================== INÍCIO ============================== */
+var telas = {};
+
+telas.inicio = function(){
+  if (!logado()) return catalogoPublico();
+  var proximas = [TAREFAS[4], TAREFAS[5], TAREFAS[6], { id:'p1', dia:14, titulo:'P1 — Cálculo I', mat:'cdi', tipo:'Prova', hora:'19:00' }];
+  var favs = ESTUDOS.filter(function(e){ return S.favs[e.id] && !S.excluidos[e.id]; });
+  var h = '<div class="p-6 space-y-6">' +
+    '<div>' + rotulo('Sexta, 11 de setembro') + '<h1 class="text-xl font-semibold text-gray-900 tracking-tight mt-1">Olá, ' + USUARIO.primeiro + '</h1>' +
+    '<p class="text-sm text-gray-500 mt-1">' + USUARIO.periodo + ' · ' + USUARIO.curso + '</p></div>';
+
+  if (equipe()){
+    h += card('<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-lg bg-gray-100 grid place-items-center text-gray-600">' + ic('upload') + '</span>' +
+      '<div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900">Área da ' + (S.cargo === 'professor' ? 'docência' : 'monitoria') + '</p><p class="text-xs text-gray-500">3 dúvidas novas em CDI I · 1 estudo aguardando revisão</p></div></div>' +
+      '<div class="grid grid-cols-2 gap-2 mt-3">' + btn(ic('plus','w-4 h-4') + 'Publicar', 'data-a="ir-publicar"', null, 'h-9 text-xs') + btn('Painel da turma', 'data-a="ir-fb" data-v="turma"', 'sec', 'h-9 text-xs') + '</div>');
+  }
+
+  var stats = [['Horas estudadas','142h','+6h esta semana'],['Tarefas entregues','34/41','83% no prazo'],['Média geral','7.8','6 matérias'],['Próxima prova','3 dias','P1 · Cálculo I']];
+  h += '<div class="grid grid-cols-2 gap-3">' + stats.map(function(s){
+    return card('<p class="text-xs text-gray-500">' + s[0] + '</p><p class="font-mono text-2xl font-medium text-gray-900 mt-2 tab-num">' + s[1] + '</p><p class="text-[11px] text-gray-400 mt-1">' + s[2] + '</p>');
+  }).join('') + '</div>';
+
+  h += '<div data-a="abrir-materia" data-v="cdi" role="button" tabindex="0" class="bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-500 hover:shadow-sm transition-all">' +
+    '<div class="flex items-center justify-between">' + rotulo('Estudando agora') + '<span class="font-mono text-xs text-gray-900 tab-num">68%</span></div>' +
+    '<p class="text-base font-medium text-gray-900 mt-2">Cálculo I</p><p class="text-xs text-gray-500">Regra da cadeia · Prof. Lorem Dolor</p>' + barra(68, 'mt-3') +
+    '<div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">' + ic('clock','w-3.5 h-3.5') + 'Próxima: <span class="text-gray-900">Lista 4 — Regra da cadeia</span><span class="ml-auto font-mono">hoje</span></div></div>';
+
+  h += '<section>' + '<div class="flex items-center justify-between mb-3"><h2 class="text-sm font-semibold text-gray-900">Próximas entregas</h2><button data-a="tab" data-v="calendario" class="text-xs text-gray-500 hover:text-gray-900">Ver calendário</button></div>' +
+    card(proximas.map(function(t){
+      var m = materia(t.mat);
+      return '<button data-a="' + (t.id === 'p1' ? 'ir-cal-mes' : 'abrir-tarefa') + '" data-v="' + t.id + '" class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50">' +
+        '<span class="w-11 shrink-0 text-center"><span class="block font-mono text-base font-medium text-gray-900 leading-none tab-num">' + t.dia + '</span><span class="block font-mono text-[10px] text-gray-400 mt-1">SET</span></span>' +
+        '<span class="flex-1 min-w-0"><span class="block text-sm text-gray-900 truncate">' + t.titulo + '</span><span class="block text-xs text-gray-500">' + m.sigla + ' · ' + t.tipo + '</span></span>' +
+        '<span class="font-mono text-[11px] text-gray-400">' + (t.dia === 11 ? 'hoje' : t.hora) + '</span></button>';
+    }).join(''), 'divide-y divide-gray-100 overflow-hidden') + '</section>';
+
+  h += '<section><div class="flex items-center justify-between mb-3"><h2 class="text-sm font-semibold text-gray-900">Favoritos</h2><button data-a="ir-estudos" class="text-xs text-gray-500 hover:text-gray-900">Todos os estudos</button></div>' +
+    (favs.length ? card(favs.map(function(e){
+      return '<div class="flex items-center gap-3 px-4 py-3"><button data-a="abrir-estudo" data-v="' + e.id + '" class="flex-1 min-w-0 text-left"><span class="block text-sm text-gray-900 truncate">' + e.titulo + '</span><span class="block text-xs text-gray-500 mt-0.5">' + materia(e.mat).sigla + ' · ' + e.autor + '</span></button>' +
+        '<button data-a="fav" data-v="' + e.id + '" aria-label="Remover dos favoritos" class="w-8 h-8 grid place-items-center rounded-lg text-gray-900 hover:bg-gray-100">' + icFill('heart','w-4 h-4') + '</button></div>';
+    }).join(''), 'divide-y divide-gray-100') : vazio('Nenhum favorito ainda', 'Toque no coração de um estudo para guardá-lo aqui.', btn('Explorar estudos', 'data-a="ir-estudos"', 'sec', 'h-9 text-xs'))) + '</section>';
+
+  var ativ = [['Entregou <span class="text-gray-900">Quiz — Encapsulamento</span>','POO · nota 4,0/4','qua'],['Concluiu o tópico <span class="text-gray-900">Regra da cadeia</span>','CDI I','ontem'],['Comentou em <span class="text-gray-900">Herança e polimorfismo</span>','Estudos · POO','ontem']];
+  if (S.pedidoEnviado) ativ.unshift(['Enviou a dúvida <span class="text-gray-900">pedido #143</span>','Dúvidas · CDI I','agora']);
+  h += '<section><h2 class="text-sm font-semibold text-gray-900 mb-3">Atividade recente</h2>' + card(ativ.slice(0,3).map(function(a){
+    return '<div class="flex gap-3 py-2.5"><span class="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0"></span><div class="flex-1 min-w-0"><p class="text-sm text-gray-600">' + a[0] + '</p><p class="text-xs text-gray-400">' + a[1] + '</p></div><span class="font-mono text-[11px] text-gray-400">' + a[2] + '</span></div>';
+  }).join(''), 'px-4 py-1.5') + '</section>';
+
+  h += card('<div class="flex items-center justify-between">' + rotulo('Período atual') + '<span class="font-mono text-xs text-gray-900">61%</span></div>' +
+    '<p class="text-sm font-medium text-gray-900 mt-2">2026/2 · 2º período</p><p class="text-xs text-gray-500">Semana 11 de 18 · termina em 12 dez</p>' + barra(61, 'mt-3'));
+
+  return h + '</div>';
+};
+
+function catalogoPublico(){
+  return '<div class="p-6 space-y-5">' +
+    '<div>' + rotulo('Acesso livre') + '<h1 class="text-xl font-semibold text-gray-900 tracking-tight mt-1 text-balance">Resumos e ferramentas de estudo, num lugar só</h1>' +
+    '<p class="text-sm text-gray-500 mt-1">Materiais de alunos, monitores e professores de Ciência da Computação.</p></div>' +
+    listaEstudos('buscaEst') +
+    card('<p class="text-sm font-medium text-gray-900">Tem conta institucional?</p><p class="text-xs text-gray-500 mt-1">Entre para favoritar, comentar, ver seu calendário e falar com a monitoria.</p><div class="mt-3">' + btn('Entrar ou criar conta', 'data-a="ir-entrar"', null, 'w-full') + '</div>', 'p-4 bg-gray-50') +
+    '</div>';
+}
+
+function listaEstudos(){
+  var termo = S.buscaEst.trim().toLowerCase();
+  var siglas = ['todas'].concat(MATERIAS.map(function(m){ return m.sigla; }));
+  var lista = ESTUDOS.filter(function(e){
+    if (S.excluidos[e.id]) return false;
+    var m = materia(e.mat);
+    if (S.estMat !== 'todas' && m.sigla !== S.estMat) return false;
+    return !termo || (e.titulo + ' ' + e.desc + ' ' + m.nome + ' ' + m.sigla + ' ' + e.autor).toLowerCase().indexOf(termo) >= 0;
+  });
+  var h = '<div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">' + ic('search','w-4 h-4') + '</span>' +
+    '<input id="buscaEst" type="search" value="' + esc(S.buscaEst) + '" placeholder="Buscar estudo, matéria ou autor" class="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-gray-900"></div>' +
+    '<div class="flex gap-2 overflow-x-auto sem-barra -mx-6 px-6">' + siglas.map(function(s){ return chip(s === 'todas' ? 'Todas' : s, S.estMat === s, 'data-a="est-mat" data-v="' + s + '"'); }).join('') + '</div>' +
+    '<div class="flex items-center justify-between"><p class="text-xs text-gray-500"><span class="font-mono text-gray-900">' + lista.length + '</span> estudo(s)</p>' +
+    (equipe() && S.tab === 'materias' ? '<button data-a="ir-publicar" class="inline-flex items-center gap-1 text-xs font-medium text-gray-900">' + ic('plus','w-3.5 h-3.5') + 'Publicar</button>' : '') + '</div>';
+
+  if (!lista.length){
+    return h + vazio('Nenhum estudo' + (termo ? ' para “' + esc(S.buscaEst) + '”' : ' com esse filtro'),
+      'Tente outra palavra, tire o filtro de matéria ou peça o material à monitoria.',
+      btn('Limpar busca', 'data-a="limpar-busca"', 'sec', 'h-9 text-xs') + btn('Pedir esse material', 'data-a="pedir-material"', null, 'h-9 text-xs'));
+  }
+  return h + '<div class="space-y-3">' + lista.map(cartaoEstudo).join('') + '</div>';
+}
+
+function cartaoEstudo(e){
+  var m = materia(e.mat), fav = !!S.favs[e.id];
+  return '<div data-a="abrir-estudo" data-v="' + e.id + '" role="button" tabindex="0" class="bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-500 hover:shadow-sm transition-all">' +
+    '<div class="flex items-center gap-2">' + sigla(m.sigla) + (e.revisado || S.revisados[e.id] ? '<span class="inline-flex items-center gap-1 text-[11px] text-gray-500">' + ic('check','w-3 h-3') + 'revisado</span>' : '') +
+    '<button data-a="fav" data-v="' + e.id + '" aria-pressed="' + fav + '" aria-label="Favoritar" class="ml-auto inline-flex items-center gap-1 h-7 px-2 -mr-2 rounded-lg font-mono text-[11px] ' + (fav ? 'text-gray-900' : 'text-gray-400') + ' hover:bg-gray-100">' +
+    (fav ? icFill('heart','w-3.5 h-3.5') : ic('heart','w-3.5 h-3.5')) + (e.fav + (fav ? 1 : 0)) + '</button></div>' +
+    '<p class="text-sm font-medium text-gray-900 mt-2.5">' + e.titulo + '</p><p class="text-xs text-gray-500 mt-1 leading-relaxed">' + e.desc + '</p>' +
+    '<div class="flex items-center justify-between mt-3 text-[11px] text-gray-400"><span>' + e.autor + ' · ' + e.papel.toLowerCase() + '</span>' +
+    '<span class="inline-flex items-center gap-1">' + ic('comment','w-3.5 h-3.5') + (e.com + (S.comentariosEnviados && S.comentariosEnviados[e.id] || 0)) + '</span></div></div>';
+}
+
+/* ============================== ENTRAR ============================== */
+telas.entrar = function(){
+  var criar = S.entrarAba === 'criar';
+  var erro = S.erroLogin ? '<p class="text-xs text-red-600 mt-1.5">' + esc(S.erroLogin) + '</p>' : '';
+  var classeErro = S.erroLogin ? 'border-red-400 focus:border-red-500' : '';
+  return '<div class="p-6">' + voltar('Voltar') +
+    '<div class="mt-4 flex flex-col items-start"><span class="w-10 h-10 rounded-xl bg-gray-900 text-white font-mono text-sm font-medium grid place-items-center">HE</span>' +
+    '<h1 class="text-xl font-semibold text-gray-900 tracking-tight mt-4">' + (criar ? 'Criar conta' : 'Entrar') + '</h1>' +
+    '<p class="text-sm text-gray-500 mt-1">Use o e-mail institucional da universidade.</p></div>' +
+    (S.motivo ? '<div class="mt-4 flex gap-2 items-start rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-xs text-gray-600">' + ic('lock','w-4 h-4 shrink-0 text-gray-400') + esc(S.motivo) + '</div>' : '') +
+    '<div class="mt-5">' + segmentado([['entrar','Entrar'],['criar','Criar conta']], S.entrarAba, 'entrar-aba') + '</div>' +
+    '<div class="mt-5 space-y-4">' +
+    (criar ? campo('Nome completo', 'placeholder="Como aparece na matrícula"') : '') +
+    '<div>' + campo('E-mail institucional', 'id="email" type="email" autocomplete="username" value="' + esc(S.email) + '" placeholder="nome@sga.exemplo.br"', classeErro) + erro + '</div>' +
+    campo('Senha', 'id="senha" type="password" autocomplete="' + (criar ? 'new-password' : 'current-password') + '" value="123456"') +
+    (criar ? '<p class="text-xs text-gray-400 -mt-2">Mínimo de 6 caracteres.</p>' : '<button class="text-xs text-gray-500 hover:text-gray-900 -mt-1">Esqueci minha senha</button>') +
+    (S.erroGeral ? '<p class="text-xs text-red-600">' + esc(S.erroGeral) + '</p>' : '') +
+    btn(criar ? 'Criar conta e entrar' : 'Entrar', 'data-a="login"', null, 'w-full') +
+    '</div><p class="text-xs text-gray-400 text-center mt-6 leading-relaxed">Aceitamos <span class="font-mono text-gray-600">@sga.exemplo.br</span> e <span class="font-mono text-gray-600">@exemplo.br</span>.</p></div>';
+};
+
+/* ============================== NOTIFICAÇÕES ============================== */
+telas.notificacoes = function(){
+  var f = S.notifFiltro || 'Todas';
+  var l = notificacoes().filter(function(n){ return f === 'Todas' || (f === 'Não lidas' ? n.nova : n.tipo === f); });
+  return '<div class="p-6 space-y-5">' + voltar('Voltar') +
+    '<div class="flex items-end justify-between gap-3">' + '<div>' + titulo('Notificações') + '</div>' +
+    '<button data-a="marcar-lidas" class="text-xs text-gray-500 hover:text-gray-900 pb-1">Marcar todas como lidas</button></div>' +
+    chips(['Todas','Não lidas','Respostas','Enquetes','Estudos'], f, 'notif-filtro') +
+    (l.length ? card(l.map(function(n){
+      return '<button data-a="' + n.a + '" data-v="' + n.v + '" class="w-full flex gap-3 px-4 py-3.5 text-left hover:bg-gray-50">' +
+        '<span class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 ' + (n.nova ? 'bg-gray-900' : 'bg-transparent') + '"></span>' +
+        '<span class="flex-1 min-w-0"><span class="block text-sm text-gray-600 leading-snug">' + n.txt + '</span><span class="block font-mono text-[11px] text-gray-400 mt-1">' + n.quando + '</span></span>' +
+        ic('right','w-4 h-4 text-gray-300 mt-0.5') + '</button>';
+    }).join(''), 'divide-y divide-gray-100 overflow-hidden') : vazio('Nada por aqui', 'Você será avisado quando alguém responder suas dúvidas.')) +
+    '<button data-a="abrir-cfg" data-v="notificacoes" class="w-full text-center text-xs text-gray-500 hover:text-gray-900">Escolher o que me avisa</button></div>';
+};
+
+/* ============================== CALENDÁRIO ============================== */
+function dataSemana(i){ var d = new Date(2026, 8, 7 + 7 * S.semana + i); return d; }
+function tarefasDoDia(d){
+  if (d.getMonth() !== 8 || d.getFullYear() !== 2026 || S.semana !== 0) return [];
+  return TAREFAS.filter(function(t){ return t.dia === d.getDate() && (S.calMat === 'todas' || materia(t.mat).sigla === S.calMat); });
+}
+function cartaoTarefa(t){
+  var m = materia(t.mat);
+  return '<button data-a="abrir-tarefa" data-v="' + t.id + '" class="w-full text-left bg-white border border-gray-200 rounded-xl p-3.5 hover:border-gray-500 hover:shadow-sm transition-all">' +
+    '<div class="flex items-start gap-3"><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">' + t.titulo + '</p>' +
+    '<p class="text-xs text-gray-500 mt-0.5">' + m.nome + ' · ' + t.tipo + '</p></div><span class="font-mono text-[11px] text-gray-500">' + t.hora + '</span></div>' +
+    '<div class="flex items-center gap-2 mt-3">' + barra(t.prog, 'flex-1') + '<span class="font-mono text-[11px] text-gray-500 w-9 text-right tab-num">' + t.prog + '%</span></div></button>';
+}
+
+telas.calendario = function(){
+  var siglas = ['todas'].concat(MATERIAS.map(function(m){ return m.sigla; }));
+  var h = '<div class="p-6 space-y-5">' +
+    '<div class="flex items-end justify-between gap-3"><div>' + titulo('Calendário', S.calVista === 'semana' ? 'Suas tarefas da semana' : 'Tarefas, provas e aulões do mês') + '</div></div>' +
+    segmentado([['semana','Semana'],['mes','Mês']], S.calVista, 'cal-vista') +
+    '<div class="flex gap-2 overflow-x-auto sem-barra -mx-6 px-6">' + siglas.map(function(s){ return chip(s === 'todas' ? 'Todas' : s, S.calMat === s, 'data-a="cal-mat" data-v="' + s + '"'); }).join('') + '</div>';
+  h += S.calVista === 'semana' ? calSemana() : calMes();
+  h += sincronizacao();
+  return h + '</div>';
+};
+
+function calSemana(){
+  var ini = dataSemana(0), fim = dataSemana(6);
+  var faixa = pad(ini.getDate()) + '/' + pad(ini.getMonth()+1) + ' – ' + pad(fim.getDate()) + '/' + pad(fim.getMonth()+1);
+  var h = '<div class="flex items-center justify-between">' +
+    '<button data-a="semana" data-v="-1" aria-label="Semana anterior" class="w-9 h-9 grid place-items-center rounded-lg border border-gray-200 text-gray-600 hover:border-gray-500">' + ic('back','w-4 h-4') + '</button>' +
+    '<div class="text-center"><p class="font-mono text-sm font-medium text-gray-900 tab-num">' + faixa + '</p>' +
+    (S.semana !== 0 ? '<button data-a="semana" data-v="0" class="text-[11px] text-gray-500 underline underline-offset-2">voltar para hoje</button>' : '<p class="text-[11px] text-gray-400">esta semana</p>') + '</div>' +
+    '<button data-a="semana" data-v="1" aria-label="Próxima semana" class="w-9 h-9 grid place-items-center rounded-lg border border-gray-200 text-gray-600 hover:border-gray-500">' + ic('right','w-4 h-4') + '</button></div>';
+
+  h += '<div class="grid grid-cols-7 gap-1.5">';
+  for (var i = 0; i < 7; i++){
+    var d = dataSemana(i), hoje = S.semana === 0 && d.getDate() === 11, sel = S.diaSel === i, n = tarefasDoDia(d).length;
+    h += '<button data-a="dia" data-v="' + i + '" aria-pressed="' + sel + '" class="rounded-lg py-2 flex flex-col items-center gap-1 border transition-all ' +
+      (hoje ? 'bg-gray-900 border-gray-900 text-white' : sel ? 'border-gray-900 text-gray-900' : 'border-gray-200 text-gray-900 hover:border-gray-500') + '">' +
+      '<span class="font-mono text-[10px] uppercase ' + (hoje ? 'text-gray-300' : 'text-gray-400') + '">' + DIAS_SEM[d.getDay()] + '</span>' +
+      '<span class="text-sm font-medium tab-num">' + d.getDate() + '</span>' +
+      '<span class="w-1 h-1 rounded-full ' + (n ? (hoje ? 'bg-white' : 'bg-gray-900') : 'bg-transparent') + '"></span></button>';
+  }
+  h += '</div>';
+
+  var dias = [];
+  for (var j = 0; j < 7; j++){ if (S.diaSel === null || S.diaSel === j) dias.push(j); }
+  var corpo = dias.map(function(j){
+    var d = dataSemana(j), ts = tarefasDoDia(d), hoje = S.semana === 0 && d.getDate() === 11;
+    if (!ts.length && S.diaSel === null) return '';
+    return '<div><p class="text-xs font-medium text-gray-900 mb-2 capitalize">' + DIAS_LONGO[d.getDay()] + ', ' + d.getDate() +
+      (hoje ? ' <span class="font-mono text-[10px] uppercase ml-1 px-1.5 py-0.5 rounded bg-gray-900 text-white">hoje</span>' : '') + '</p>' +
+      (ts.length ? '<div class="space-y-2">' + ts.map(cartaoTarefa).join('') + '</div>' : '<p class="text-xs text-gray-400">Nenhuma tarefa neste dia.</p>') + '</div>';
+  }).join('');
+  if (!corpo) corpo = vazio('Nenhuma tarefa nesta semana', S.calMat !== 'todas' ? 'Tire o filtro de matéria para ver as outras.' : 'As tarefas do Canvas aparecem aqui assim que o professor publicar.');
+  return h + (S.diaSel !== null ? '<button data-a="dia" data-v="' + S.diaSel + '" class="text-xs text-gray-500 hover:text-gray-900 -mt-2">Mostrar a semana toda</button>' : '') +
+    '<div class="space-y-5">' + corpo + '</div>';
+}
+
+function eventosDoDia(dia){
+  var l = [];
+  TAREFAS.forEach(function(t){ if (t.dia === dia) l.push({ titulo:t.titulo, mat:t.mat, hora:t.hora, tipo:t.tipo, tarefa:t.id }); });
+  EVENTOS_MES.forEach(function(e){ if (e.dia === dia) l.push(e); });
+  if (S.aulaoMarcado && dia === 18) l.push({ titulo:'Aulão — ' + S.temaAulao, mat:'cdi', hora:'19:00', tipo:'Aulão', aulao:true });
+  return l.filter(function(e){ return S.calMat === 'todas' || materia(e.mat).sigla === S.calMat; });
+}
+function calMes(){
+  var h = '<div class="flex items-center justify-between"><button aria-label="Mês anterior" class="w-9 h-9 grid place-items-center rounded-lg border border-gray-200 text-gray-600 hover:border-gray-500">' + ic('back','w-4 h-4') + '</button>' +
+    '<p class="text-sm font-medium text-gray-900">Setembro de 2026</p><button aria-label="Próximo mês" class="w-9 h-9 grid place-items-center rounded-lg border border-gray-200 text-gray-600 hover:border-gray-500">' + ic('right','w-4 h-4') + '</button></div>';
+  h += '<div><div class="grid grid-cols-7 mb-1">' + ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(function(d){ return '<span class="text-center font-mono text-[10px] uppercase text-gray-400">' + d + '</span>'; }).join('') + '</div>' +
+    '<div class="grid grid-cols-7 gap-1"><span></span>'; // 01/09/2026 é terça
+  for (var d = 1; d <= 30; d++){
+    var ev = eventosDoDia(d), hoje = d === 11, sel = S.mesDia === d, aulao = S.aulaoMarcado && d === 18;
+    h += '<button data-a="mes-dia" data-v="' + d + '" aria-pressed="' + sel + '" class="aspect-square rounded-lg flex flex-col items-center justify-center gap-1 text-xs tab-num border transition-all ' +
+      (hoje ? 'bg-gray-900 border-gray-900 text-white' : sel ? 'border-gray-900 text-gray-900' : aulao ? 'border-gray-400 border-dashed text-gray-900' : 'border-transparent text-gray-700 hover:border-gray-300') + '">' + d +
+      '<span class="flex gap-0.5 h-1">' + ev.slice(0,3).map(function(e){ return '<span class="w-1 h-1 rounded-full ' + (hoje ? 'bg-white' : e.tipo === 'Prova' || e.aulao ? 'bg-gray-900' : 'bg-gray-400') + '"></span>'; }).join('') + '</span></button>';
+  }
+  h += '</div></div>';
+  h += '<div class="flex gap-4 text-[11px] text-gray-500"><span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-gray-900"></span>prova ou aulão</span><span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>tarefa</span></div>';
+
+  var evs = eventosDoDia(S.mesDia), dt = new Date(2026, 8, S.mesDia);
+  h += '<div><p class="text-xs font-medium text-gray-900 mb-2 capitalize">' + DIAS_LONGO[dt.getDay()] + ', ' + S.mesDia + ' de setembro</p>' +
+    (evs.length ? '<div class="space-y-2">' + evs.map(function(e){
+      var m = materia(e.mat);
+      return '<button ' + (e.tarefa ? 'data-a="abrir-tarefa" data-v="' + e.tarefa + '"' : '') + ' class="w-full text-left bg-white border ' + (e.aulao ? 'border-gray-900' : 'border-gray-200') + ' rounded-xl p-3.5 flex items-start gap-3 hover:border-gray-500 transition-all">' +
+        '<span class="font-mono text-[11px] text-gray-500 w-10 pt-0.5">' + e.hora + '</span><span class="flex-1 min-w-0"><span class="block text-sm font-medium text-gray-900">' + e.titulo + '</span>' +
+        '<span class="block text-xs text-gray-500 mt-0.5">' + m.sigla + ' · ' + e.tipo + (e.aulao ? ' · sala 201 · escolhido pela enquete' : '') + '</span></span></button>';
+    }).join('') + '</div>' : '<p class="text-xs text-gray-400">Nada marcado neste dia.</p>') + '</div>';
+  return h;
+}
+
+function sincronizacao(){
+  return '<section class="pt-2"><h2 class="text-sm font-semibold text-gray-900 mb-3">Sincronização</h2>' +
+    card('<div class="flex items-center gap-2">' + ic('refresh','w-4 h-4 text-gray-500') + '<p class="text-sm font-medium text-gray-900">Importar do Canvas</p></div>' +
+      '<p class="text-xs text-gray-500 mt-1">Cole a URL do feed do calendário do Canvas.</p>' +
+      '<input value="https://canvas.exemplo.br/feeds/calendars/user_8f2c.ics" class="mt-3 w-full h-10 px-3 rounded-lg border border-gray-200 bg-white font-mono text-[11px] text-gray-600 focus:outline-none focus:border-gray-900">' +
+      '<div class="grid grid-cols-2 gap-2 mt-2">' + btn('Salvar e importar', 'data-a="importar-feed"', null, 'h-9 text-xs') + btn('Atualizar agora', 'data-a="importar-feed"', 'sec', 'h-9 text-xs') + '</div>' +
+      '<p class="font-mono text-[11px] text-gray-400 mt-2">' + (S.feedSalvo ? 'Importado agora · 68 eventos' : 'Última importação 04/09 · 68 eventos · atualiza sozinho a cada 6 h') + '</p>') +
+    card('<div class="flex items-center gap-2">' + ic('link','w-4 h-4 text-gray-500') + '<p class="text-sm font-medium text-gray-900">Assinar no seu app</p></div>' +
+      '<p class="text-xs text-gray-500 mt-1">Google Agenda, Apple Calendário ou Outlook recebem suas tarefas.</p>' +
+      '<p class="mt-3 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 font-mono text-[11px] text-gray-600 truncate">https://hub.exemplo.br/feed/lorem.ics?token=a91…</p>' +
+      '<div class="grid grid-cols-2 gap-2 mt-2">' + btn(S.copiado ? ic('check','w-4 h-4') + 'Copiado' : 'Copiar link', 'data-a="copiar-feed"', 'sec', 'h-9 text-xs') + btn('Gerar novo link', 'data-a="novo-link"', 'perigo', 'h-9 text-xs') + '</div>', 'p-4 mt-3') +
+    '</section>';
+}
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+function modalTarefa(){
+  var t = TAREFAS.filter(function(x){ return x.id === S.tarefa; })[0];
+  if (!t) return '';
+  var m = materia(t.mat), d = new Date(2026, 8, t.dia), aberta = t.ganho === null;
+  var box = function(r, v, s){ return '<div class="rounded-lg bg-gray-50 border border-gray-100 p-3"><p class="text-[11px] text-gray-500">' + r + '</p><p class="font-mono text-lg font-medium text-gray-900 mt-1 tab-num">' + v + '</p>' + (s ? '<p class="text-[11px] text-gray-400">' + s + '</p>' : '') + '</div>'; };
+  return '<div class="absolute inset-0 z-30 bg-gray-900/40 flex items-center justify-center p-6" data-a="fechar-modal">' +
+    '<div role="dialog" aria-modal="true" aria-label="' + esc(t.titulo) + '" class="w-full bg-white rounded-xl border border-gray-200 shadow-xl p-5" data-parar="1">' +
+    '<div class="flex items-start gap-3"><div class="flex-1">' + '<div class="flex gap-2">' + sigla(m.sigla) + sigla(t.tipo.toUpperCase()) + '</div>' +
+    '<h2 class="text-base font-semibold text-gray-900 mt-2">' + t.titulo + '</h2><p class="text-xs text-gray-500">' + m.nome + '</p></div>' +
+    '<button data-a="fechar-modal" aria-label="Fechar" class="w-8 h-8 -mr-2 -mt-1 grid place-items-center rounded-lg text-gray-400 hover:bg-gray-100">' + ic('x','w-4 h-4') + '</button></div>' +
+    '<div class="grid grid-cols-2 gap-2 mt-4">' +
+    box('Nota ganha', aberta ? '—' : num(t.ganho), aberta ? 'em aberto' : 'de ' + num(t.valor) + ' pts') +
+    box('Nota perdida', aberta ? '—' : num(t.perdido), aberta ? 'vale ' + num(t.valor) + ' pts' : 'pts descontados') +
+    '<div class="rounded-lg bg-gray-50 border border-gray-100 p-3"><p class="text-[11px] text-gray-500">Progresso</p><p class="font-mono text-lg font-medium text-gray-900 mt-1 tab-num">' + t.prog + '%</p>' + barra(t.prog, 'mt-1.5 bg-gray-200') + '</div>' +
+    box('Vencimento', pad(t.dia) + '/09', DIAS_LONGO[d.getDay()] + ' · ' + t.hora) + '</div>' +
+    '<div class="grid grid-cols-2 gap-2 mt-4">' + btn('Fechar', 'data-a="fechar-modal"', 'sec') + btn('Abrir matéria', 'data-a="abrir-materia" data-v="' + m.id + '"') + '</div></div></div>';
+}
+
+/* ============================== MATÉRIAS ============================== */
+telas.materias = function(){
+  if (!logado()){
+    return '<div class="p-6 space-y-5">' + titulo('Estudos', 'O catálogo é aberto. Suas matérias aparecem quando você entrar.') + listaEstudos() + '</div>';
+  }
+  var h = '<div class="p-6 space-y-5">' + titulo('Matérias', USUARIO.periodo + ' · 20 créditos') + segmentado([['materias','Minhas matérias'],['estudos','Estudos']], S.matAba, 'mat-aba');
+  if (S.matAba === 'estudos') return h + listaEstudos() + '</div>';
+
+  var termo = S.buscaMat.trim().toLowerCase();
+  var lista = MATERIAS.filter(function(m){ return !termo || (m.nome + ' ' + m.sigla + ' ' + m.prof).toLowerCase().indexOf(termo) >= 0; });
+  h += '<div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">' + ic('search','w-4 h-4') + '</span>' +
+    '<input id="buscaMat" type="search" value="' + esc(S.buscaMat) + '" placeholder="Buscar por matéria ou professor" class="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 bg-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-gray-900"></div>';
+  if (!lista.length) return h + vazio('Nenhuma matéria encontrada', 'Confira o nome ou busque pelo professor.', btn('Limpar busca', 'data-a="limpar-mat"', 'sec', 'h-9 text-xs')) + '</div>';
+  return h + '<div class="space-y-3">' + lista.map(function(m){
+    return '<button data-a="abrir-materia" data-v="' + m.id + '" class="w-full text-left bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-500 hover:shadow-sm transition-all">' +
+      '<div class="flex items-start gap-3"><div class="flex-1 min-w-0">' + sigla(m.sigla) + '<p class="text-sm font-medium text-gray-900 mt-2">' + m.nome + '</p><p class="text-xs text-gray-500">' + m.prof + '</p></div>' +
+      ic('right','w-4 h-4 text-gray-300 mt-1') + '</div>' +
+      '<div class="flex items-center gap-2 mt-3">' + barra(m.prog, 'flex-1') + '<span class="font-mono text-[11px] text-gray-500 tab-num">' + m.prog + '%</span></div>' +
+      '<div class="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500"><span>Nota <span class="font-mono text-gray-900 tab-num">' + num(m.nota) + '</span></span><span><span class="font-mono text-gray-900">' + m.cred + '</span> créditos</span></div></button>';
+  }).join('') + '</div></div>';
+};
+
+telas.materia = function(){
+  var m = materia(S.materia), feitos = m.topicos.filter(function(t){ return t[1]; }).length;
+  var estudos = ESTUDOS.filter(function(e){ return e.mat === m.id && !S.excluidos[e.id]; });
+  var stat = function(r, v){ return '<div class="bg-white border border-gray-200 rounded-xl p-3"><p class="text-[11px] text-gray-500">' + r + '</p><p class="font-mono text-lg font-medium text-gray-900 mt-1 tab-num">' + v + '</p></div>'; };
+  return '<div class="p-6 space-y-5">' + voltar('Matérias') +
+    '<div>' + sigla(m.sigla) + '<h1 class="text-xl font-semibold text-gray-900 tracking-tight mt-2 text-balance">' + m.nome + '</h1><p class="text-sm text-gray-500 mt-1">' + m.prof + '</p></div>' +
+    '<div class="grid grid-cols-3 gap-2">' + stat('Nota', num(m.nota)) + stat('Tópicos', feitos + '/' + m.topicos.length) + stat('Créditos', m.cred) + '</div>' +
+    '<div><div class="flex items-center justify-between text-xs text-gray-500 mb-1.5"><span>Progresso</span><span class="font-mono text-gray-900">' + m.prog + '%</span></div>' + barra(m.prog) + '</div>' +
+    '<section><h2 class="text-sm font-semibold text-gray-900 mb-3">Conteúdo programático</h2>' + card(m.topicos.map(function(t, i){
+      return '<div class="flex items-center gap-3 px-4 py-3">' +
+        (t[1] ? '<span class="w-5 h-5 rounded-full bg-gray-900 text-white grid place-items-center shrink-0">' + ic('check','w-3 h-3') + '</span>'
+              : '<span class="w-5 h-5 rounded-full border border-gray-300 shrink-0"></span>') +
+        '<span class="flex-1 text-sm ' + (t[1] ? 'text-gray-500 line-through decoration-gray-300' : 'text-gray-900') + '">' + t[0] + '</span><span class="font-mono text-[11px] text-gray-400">' + pad(i+1) + '</span></div>';
+    }).join(''), 'divide-y divide-gray-100') + '</section>' +
+    '<section><div class="flex items-center justify-between mb-3"><h2 class="text-sm font-semibold text-gray-900">Estudos de ' + m.sigla + '</h2>' +
+    (equipe() ? '<button data-a="ir-publicar" class="inline-flex items-center gap-1 text-xs font-medium text-gray-900">' + ic('plus','w-3.5 h-3.5') + 'Publicar</button>' : '') + '</div>' +
+    (estudos.length ? '<div class="space-y-3">' + estudos.map(cartaoEstudo).join('') + '</div>'
+      : vazio('Ainda não há estudos de ' + m.sigla, 'Peça um material e a monitoria é avisada.', btn('Pedir material', 'data-a="pedir-material" data-v="' + m.sigla + '"', 'sec', 'h-9 text-xs'))) +
+    '</section></div>';
+};
+
+telas.estudo = function(){
+  var e = estudo(S.estudo), m = materia(e.mat), fav = !!S.favs[e.id], rev = e.revisado || S.revisados[e.id];
+  var coms = (COMENTARIOS[e.id] || []).concat((S.meusComentarios && S.meusComentarios[e.id]) || []);
+  var conteudo = e.id === 1
+    ? '<p class="text-sm text-gray-700 leading-relaxed">Quando uma função está “dentro” de outra, a derivada é a derivada de fora, calculada na de dentro, vezes a derivada de dentro.</p>' +
+      '<p class="font-mono text-sm text-gray-900 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 my-3">(f ∘ g)′(x) = f′(g(x)) · g′(x)</p>' +
+      '<p class="text-xs font-medium text-gray-900">Exemplo 1</p><p class="text-sm text-gray-700 leading-relaxed mt-1">h(x) = (3x² + 1)⁵. Fora: u⁵. Dentro: u = 3x² + 1.</p>' +
+      '<p class="font-mono text-sm text-gray-900 mt-2">h′(x) = 5(3x² + 1)⁴ · 6x = 30x(3x² + 1)⁴</p>'
+    : '<p class="text-sm text-gray-700 leading-relaxed">' + e.desc + '</p><div class="mt-3 space-y-2"><div class="h-2 rounded bg-gray-100 w-full"></div><div class="h-2 rounded bg-gray-100 w-11/12"></div><div class="h-2 rounded bg-gray-100 w-4/5"></div></div>' +
+      '<p class="text-[11px] text-gray-400 mt-3">O conteúdo completo abre do arquivo publicado.</p>';
+  return '<div class="p-6 space-y-5">' +
+    '<div class="flex items-center justify-between">' + voltar('Voltar') +
+    '<div class="flex gap-1"><button data-a="fav" data-v="' + e.id + '" aria-pressed="' + fav + '" aria-label="Favoritar" class="w-9 h-9 grid place-items-center rounded-lg ' + (fav ? 'text-gray-900' : 'text-gray-400') + ' hover:bg-gray-100">' + (fav ? icFill('heart','w-5 h-5') : ic('heart')) + '</button>' +
+    (equipe() ? '<button data-a="sheet" aria-label="Ações da equipe" class="w-9 h-9 grid place-items-center rounded-lg text-gray-600 hover:bg-gray-100">' + ic('more') + '</button>' : '') + '</div></div>' +
+    '<div><div class="flex flex-wrap gap-2">' + sigla(m.sigla) + (rev ? '<span class="inline-flex items-center gap-1 text-[11px] text-gray-500">' + ic('check','w-3 h-3') + 'revisado pela monitoria</span>' : '<span class="text-[11px] text-gray-400">aguardando revisão</span>') + '</div>' +
+    '<h1 class="text-xl font-semibold text-gray-900 tracking-tight mt-2 text-balance">' + e.titulo + '</h1>' +
+    '<p class="text-sm text-gray-500 mt-1">' + e.autor + ' · ' + e.papel.toLowerCase() + ' · ' + e.data + '</p></div>' +
+    segmentado([['Não iniciado','Não iniciado'],['Estudando','Estudando'],['Concluído','Concluído']], S.estStatus[e.id] || 'Não iniciado', 'est-status') +
+    card(conteudo) +
+    '<section><h2 class="text-sm font-semibold text-gray-900 mb-3">Comentários e dúvidas <span class="font-mono text-xs text-gray-400 font-normal">' + coms.length + '</span></h2>' +
+    (coms.length ? '<div class="space-y-3">' + coms.map(function(c){
+      return '<div class="flex gap-3">' + avatar(c.nome, 'w-8 h-8 text-[11px]') + '<div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="text-xs font-medium text-gray-900">' + c.nome + '</span>' + papel(c.papel) + '<span class="ml-auto font-mono text-[10px] text-gray-400">' + c.data + '</span></div>' +
+        '<p class="text-sm text-gray-600 mt-1 leading-relaxed">' + esc(c.texto) + '</p></div></div>';
+    }).join('') + '</div>' : '<p class="text-xs text-gray-400">Seja o primeiro a comentar.</p>') +
+    '<div class="mt-4 space-y-2">' + area('Sua dúvida ou comentário', 'id="comentario" placeholder="Escreva aqui…"', esc(S.comentarioNovo)) +
+    '<div class="grid grid-cols-2 gap-2">' + btn('Levar para Dúvidas', 'data-a="levar-duvida"', 'sec', 'h-9 text-xs') + btn('Comentar', 'data-a="comentar"', null, 'h-9 text-xs') + '</div></div></section></div>';
+};
+
+function sheetEquipe(){
+  var e = estudo(S.estudo), rev = e.revisado || S.revisados[e.id];
+  var item = function(icn, rot, sub, a, perigo){
+    return '<button data-a="' + a + '" class="w-full flex items-center gap-3 px-2 py-3 rounded-lg text-left hover:bg-gray-50">' +
+      '<span class="w-9 h-9 rounded-lg bg-gray-100 grid place-items-center ' + (perigo ? 'text-red-600' : 'text-gray-600') + '">' + ic(icn,'w-4 h-4') + '</span>' +
+      '<span class="flex-1"><span class="block text-sm ' + (perigo ? 'text-red-600' : 'text-gray-900') + '">' + rot + '</span><span class="block text-xs text-gray-500">' + sub + '</span></span></button>';
+  };
+  return '<div class="absolute inset-0 z-30 bg-gray-900/40 flex items-end" data-a="fechar-sheet">' +
+    '<div role="dialog" aria-modal="true" aria-label="Ações da equipe" class="w-full bg-white rounded-t-2xl border-t border-gray-200 px-4 pt-3 pb-6" data-parar="1">' +
+    '<span class="block w-10 h-1 rounded-full bg-gray-200 mx-auto"></span>' +
+    '<div class="px-2 pt-4 pb-2">' + rotulo('Ações da equipe') + '<p class="text-sm font-medium text-gray-900 mt-1 truncate">' + e.titulo + '</p><p class="text-xs text-gray-500">Só monitores e professores veem estas opções.</p></div>' +
+    item('check', rev ? 'Revisado' : 'Marcar como revisado', rev ? 'O selo já aparece para a turma' : 'Mostra o selo de revisado para a turma', 'revisar') +
+    item('upload', 'Substituir arquivo', 'Envia uma versão nova do HTML', 'fechar-sheet') +
+    (S.confirmarExclusao
+      ? '<div class="mx-2 mt-2 rounded-lg border border-red-200 p-3"><p class="text-sm text-gray-900">Excluir “' + e.titulo + '”?</p><p class="text-xs text-gray-500 mt-0.5">Some do catálogo e dos favoritos de quem salvou. Não dá para desfazer.</p>' +
+        '<div class="grid grid-cols-2 gap-2 mt-3">' + btn('Cancelar', 'data-a="cancelar-exclusao"', 'sec', 'h-9 text-xs') + btn('Excluir estudo', 'data-a="excluir"', 'perigo', 'h-9 text-xs') + '</div></div>'
+      : item('x', 'Excluir estudo', 'Remove do catálogo', 'pedir-exclusao', true)) +
+    '</div></div>';
+}
+
+telas.publicar = function(){
+  if (!equipe()){
+    return '<div class="p-6 space-y-5">' + voltar('Voltar') +
+      vazio('Só monitores e professores publicam estudos', 'Seu cargo atual é <span class="font-mono text-gray-900">' + S.cargo + '</span>. Se isso está errado, fale com a coordenação da monitoria.',
+        btn('Voltar ao início', 'data-a="tab" data-v="inicio"', null, 'h-9 text-xs')) +
+      '<p class="text-xs text-gray-400 text-center">Quer sugerir um material? Use “Pedir esse material” em Estudos.</p></div>';
+  }
+  return '<div class="p-6 space-y-5">' + voltar('Voltar') + titulo('Publicar estudo', 'O arquivo vai para o armazenamento e o cadastro para o catálogo.') +
+    '<div class="space-y-4">' + campo('Título', 'placeholder="Ex.: Derivação implícita em 5 passos"') +
+    area('Descrição', 'placeholder="Em uma frase, o que a pessoa aprende"') +
+    selecao('Matéria', MATERIAS.map(function(m){ return m.nome; }), MATERIAS[0].nome, '') +
+    '<div><span class="text-xs font-medium text-gray-700">Arquivo HTML</span>' +
+    '<button class="mt-1.5 w-full border border-dashed border-gray-300 rounded-xl py-6 flex flex-col items-center gap-1 text-gray-500 hover:border-gray-500">' + ic('upload') + '<span class="text-sm text-gray-900">Escolher arquivo</span><span class="text-[11px]">.html até 5 MB</span></button></div>' +
+    btn(S.publicado ? ic('check','w-4 h-4') + 'Publicado' : 'Publicar', 'data-a="publicar"', null, 'w-full') + '</div>' +
+    '<section class="pt-2 border-t border-gray-200"><h2 class="text-sm font-semibold text-gray-900 mt-5">Importar em lote</h2>' +
+    '<p class="text-xs text-gray-500 mt-1">Sobe os estudos que ainda estão na pasta <span class="font-mono text-gray-700">estudos/</span> do repositório. Pode rodar de novo.</p>' +
+    '<div class="mt-3">' + btn(ic('refresh','w-4 h-4') + 'Importar', 'data-a="importar-lote"', 'sec', 'h-9 text-xs') + '</div>' +
+    '<div class="mt-3 rounded-xl bg-gray-50 border border-gray-200 p-3 font-mono text-[11px] leading-6 min-h-28 overflow-x-auto rolagem">' +
+    (S.importou ? '<span class="text-gray-900">ok</span>  POO · Herança e polimorfismo<br><span class="text-gray-900">ok</span>  CDI I · Limites laterais<br><span class="text-gray-900">ok</span>  FÍS EXP · Relatório de laboratório<br><span class="text-red-600">erro</span> sem-titulo.html · falta &lt;title&gt;<br><span class="text-gray-500">Concluído — 3 de 4.</span>'
+                : '<span class="text-gray-400">O log aparece aqui, uma linha por arquivo.</span>') + '</div></section></div>';
+};
+
+/* ============================== CHAT ============================== */
+telas.chat = function(){
+  var h = '<div class="p-6 space-y-5">' + titulo('Chat', 'Professores, monitores e salas da turma') + segmentado([['conversas','Conversas'],['caixa','Caixa de entrada']], S.chatAba, 'chat-aba');
+  if (S.chatAba === 'caixa'){
+    var itens = [
+      { de:'Coordenação de CC', assunto:'Monitoria extra antes da P1', prev:'Sábado, 12/09, das 9 h às 12 h na sala 104.', data:'10 set', nova:true },
+      { de:'Ipsum Dolor · monitor', assunto:'Resposta ao seu pedido #143', prev:S.respostaChegou ? 'Deriva os dois lados em x e isola y′…' : 'Recebemos seu pedido e já está na fila.', data:'hoje', nova:S.respostaChegou },
+      { de:'Hub de Estudos', assunto:'Seu favorito foi revisado', prev:'Como escrever o relatório de laboratório ganhou o selo.', data:'02 set', nova:false },
+      { de:'Prof.ª Magna Aliqua', assunto:'Prova de Álgebra Linear remarcada', prev:'A prova passa para 22/09, mesmo horário.', data:'01 set', nova:false }
+    ];
+    var f = S.caixaFiltro;
+    var vis = itens.filter(function(i){ return f === 'Não lidas' ? i.nova : f === 'Arquivadas' || f === 'Enviadas' ? false : true; });
+    return h + chips(['Caixa de entrada','Não lidas','Enviadas','Arquivadas'], f, 'caixa-filtro') +
+      (vis.length ? card(vis.map(function(i){
+        return '<button class="w-full flex gap-3 px-4 py-3.5 text-left hover:bg-gray-50"><span class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 ' + (i.nova ? 'bg-gray-900' : 'bg-transparent') + '"></span>' +
+          '<span class="flex-1 min-w-0"><span class="flex items-center gap-2"><span class="text-xs ' + (i.nova ? 'font-medium text-gray-900' : 'text-gray-600') + ' truncate">' + i.de + '</span><span class="ml-auto font-mono text-[10px] text-gray-400 shrink-0">' + i.data + '</span></span>' +
+          '<span class="block text-sm ' + (i.nova ? 'font-medium text-gray-900' : 'text-gray-700') + ' mt-0.5 truncate">' + i.assunto + '</span><span class="block text-xs text-gray-500 truncate">' + i.prev + '</span></span></button>';
+      }).join(''), 'divide-y divide-gray-100 overflow-hidden') : vazio('Nada em ' + f.toLowerCase(), 'Os avisos oficiais e respostas a pedidos ficam guardados aqui.')) +
+      '<p class="text-xs text-gray-400 leading-relaxed">A caixa de entrada guarda o histórico oficial: pedidos, respostas e avisos. Conversa solta fica em Conversas.</p></div>';
+  }
+  return h + card(CONVERSAS.map(function(c){
+    var ultima = c.msgs[c.msgs.length - 1], nao = c.nao;
+    if (c.id === 'ipsum' && S.respostaChegou){ ultima = { de:'outro', t:'Deriva os dois lados em x: 2x + 2y·y′ = 0…' }; if (S.resolvido === null) nao = 1; }
+    var sala = c.tipo === 'sala';
+    return '<button data-a="abrir-conv" data-v="' + c.id + '" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50">' +
+      '<span class="relative">' + avatar(c.nome, 'w-10 h-10 text-xs', sala) + (c.online ? '<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-gray-900 ring-2 ring-white"></span>' : '') + '</span>' +
+      '<span class="flex-1 min-w-0"><span class="flex items-center gap-1.5"><span class="text-sm ' + (nao ? 'font-medium' : '') + ' text-gray-900 truncate">' + c.nome + '</span>' + (sala ? '' : papel(c.papel)) +
+      '<span class="ml-auto font-mono text-[10px] text-gray-400 shrink-0">' + c.hora + '</span></span>' +
+      (sala ? '<span class="block font-mono text-[11px] text-gray-400">' + c.topico + '</span>' : '') +
+      '<span class="flex items-center gap-2"><span class="text-xs ' + (nao ? 'text-gray-900' : 'text-gray-500') + ' truncate">' + (ultima.de === 'eu' ? 'Você: ' : ultima.autor ? ultima.autor + ': ' : '') + esc(ultima.t) + '</span>' +
+      (nao ? '<span class="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-gray-900 text-white font-mono text-[10px] leading-5 text-center shrink-0">' + nao + '</span>' : '') + '</span></span></button>';
+  }).join(''), 'divide-y divide-gray-100 overflow-hidden') + '</div>';
+};
+
+telas.conversa = function(){
+  var c = conversa(S.conv), sala = c.tipo === 'sala';
+  var msgs = c.msgs.slice();
+  if (c.id === 'ipsum' && S.respostaChegou) msgs.push({ de:'outro', t:'Deriva os dois lados em relação a x: 2x + 2y·y′ = 0. Isola y′ e sai y′ = −x/y. O y′ aparece porque y depende de x — é a regra da cadeia.', h:'17:24' });
+  var status = sala ? '<span class="font-mono">' + c.topico + '</span> · 38 participantes'
+    : c.fora ? 'fora do horário · atende ' + c.atende : c.online ? 'online' + (c.atende ? ' · atende ' + c.atende : '') : 'visto por último ontem';
+  var h = '<div class="flex flex-col min-h-full">' +
+    '<div class="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-2">' +
+    '<button data-a="voltar" aria-label="Voltar" class="w-8 h-8 grid place-items-center rounded-lg text-gray-500 hover:bg-gray-100">' + ic('back','w-4 h-4') + '</button>' +
+    avatar(c.nome, 'w-9 h-9 text-xs', sala) + '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><span class="text-sm font-medium text-gray-900 truncate">' + c.nome + '</span>' + (sala ? '' : papel(c.papel)) + '</div>' +
+    '<p class="text-[11px] text-gray-500 truncate">' + status + '</p></div></div>' +
+    '<div class="flex-1 px-4 py-4 space-y-3 bg-gray-50">' +
+    '<p class="text-center font-mono text-[10px] uppercase tracking-wider text-gray-400">hoje</p>';
+  if (c.fora){
+    h += '<div class="flex gap-2.5 items-start rounded-xl border border-dashed border-gray-300 bg-white px-3 py-3">' + ic('clock','w-4 h-4 text-gray-500 shrink-0 mt-0.5') +
+      '<div><p class="text-xs font-medium text-gray-900">Fora do horário de atendimento</p><p class="text-xs text-gray-500 mt-0.5 leading-relaxed">' + c.nome.split(' ')[0] + ' atende ' + c.atende + '. Sua mensagem fica na fila e chega na segunda às 14 h.</p></div></div>';
+  }
+  h += msgs.map(function(m){
+    var eu = m.de === 'eu';
+    return '<div class="flex ' + (eu ? 'justify-end' : 'justify-start') + '"><div class="max-w-[78%] px-3.5 py-2.5 text-sm leading-relaxed ' +
+      (eu ? 'bg-gray-900 text-white rounded-2xl rounded-br-md' : 'bg-white border border-gray-200 text-gray-900 rounded-2xl rounded-bl-md') + '">' +
+      (m.autor ? '<p class="text-[11px] font-medium text-gray-500 mb-0.5">' + m.autor + '</p>' : '') + esc(m.t) +
+      '<span class="block text-right font-mono text-[10px] mt-1 ' + (eu ? 'text-gray-400' : 'text-gray-400') + '">' + m.h + (eu && c.fora && m === msgs[msgs.length-1] ? ' · na fila' : '') + '</span></div></div>';
+  }).join('');
+  if (c.id === 'ipsum' && S.respostaChegou){
+    h += S.resolvido === null
+      ? '<div class="bg-white border border-gray-200 rounded-xl p-4"><p class="text-sm font-medium text-gray-900">Isso resolveu sua dúvida?</p><p class="text-xs text-gray-500 mt-0.5">Sua resposta conta no painel de onde a turma mais trava.</p>' +
+        '<div class="grid grid-cols-2 gap-2 mt-3">' + btn('Ainda não', 'data-a="resolveu" data-v="nao"', 'sec', 'h-9 text-xs') + btn('Sim, resolveu', 'data-a="resolveu" data-v="sim"', null, 'h-9 text-xs') + '</div></div>'
+      : '<p class="text-center text-xs text-gray-500">' + (S.resolvido ? ic('check','w-3.5 h-3.5 inline -mt-0.5') + ' Marcada como útil · pedido #143 encerrado' : 'Pedido #143 reaberto · o monitor foi avisado') + '</p>';
+  }
+  h += '</div>' +
+    '<div class="sticky bottom-0 bg-white border-t border-gray-200 px-3 py-2.5 flex items-center gap-2">' +
+    '<input id="rascunho" value="' + esc(S.rascunho) + '" placeholder="' + (c.fora ? 'Deixar mensagem na fila…' : 'Escreva uma mensagem…') + '" class="flex-1 h-10 px-3.5 rounded-full border border-gray-200 bg-gray-50 text-sm placeholder:text-gray-400 focus:outline-none focus:border-gray-900 focus:bg-white">' +
+    '<button data-a="enviar-msg" aria-label="Enviar" class="w-10 h-10 grid place-items-center rounded-full bg-gray-900 text-white hover:bg-gray-800">' + ic('send','w-4 h-4') + '</button></div></div>';
+  return h;
+};
+
+/* ============================== DÚVIDAS & FEEDBACK ============================== */
+telas.feedback = function(){
+  var h = '<div class="p-6 space-y-5">' + titulo('Dúvidas & Feedback', 'O que a turma pergunta e o que você acha da plataforma') +
+    segmentado([['turma','Turma'],['enviar','Enviar'],['auloes','Aulões'],['avaliacoes','Avaliações']], S.fbAba, 'fb-aba');
+  return h + ({ turma:fbTurma, enviar:fbEnviar, auloes:fbAuloes, avaliacoes:fbAvaliacoes })[S.fbAba]() + '</div>';
+};
+
+function fbTurma(){
+  var topicos = [['Regra da cadeia',31],['Derivação implícita',22],['Limites laterais',12],['Continuidade',8]];
+  if (S.resolvido) topicos[1][1] = 23;
+  var max = 31;
+  var h = chips(['CDI I','POO','ÁLG LIN','FÍS EXP'], S.fbMat, 'fb-mat');
+  h += card('<div class="flex items-baseline justify-between"><h2 class="text-sm font-semibold text-gray-900">Onde a turma mais trava</h2><span class="font-mono text-[10px] text-gray-400">30 DIAS</span></div>' +
+    '<p class="text-xs text-gray-500 mt-0.5">Dúvidas enviadas por tópico · ' + S.fbMat + '</p>' +
+    '<div class="mt-4 space-y-3">' + topicos.map(function(t){
+      return '<div><div class="flex justify-between text-xs mb-1"><span class="text-gray-700">' + t[0] + '</span><span class="font-mono text-gray-900 tab-num">' + t[1] + '</span></div>' +
+        '<div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gray-900 rounded-full" style="width:' + Math.round(t[1] / max * 100) + '%"></div></div></div>';
+    }).join('') + '</div>' +
+    (equipe() ? '<div class="mt-4 pt-4 border-t border-gray-100 space-y-2">' +
+      (!S.enqueteAberta ? btn('Abrir enquete de aulão com os 3 do topo', 'data-a="abrir-enquete"', null, 'w-full h-9 text-xs') : '') +
+      btn('Gerar relatório para o professor', 'data-a="relatorio"', 'sec', 'w-full h-9 text-xs') + '</div>' : ''));
+
+  if (S.enqueteAberta){
+    var ops = [['Regra da cadeia na prática',52],['Derivação implícita passo a passo',29],['Limites laterais sem medo',19]];
+    h += '<div class="bg-white border border-gray-900 rounded-xl p-4">' +
+      '<div class="flex items-center justify-between">' + rotulo('Enquete · aulão') + '<span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-gray-900 text-white">aberta</span></div>' +
+      '<h2 class="text-sm font-semibold text-gray-900 mt-2">Qual o tema do próximo aulão?</h2>' +
+      '<p class="text-xs text-gray-500">CDI I · encerra em 2 dias · <span class="font-mono">' + (S.votou ? 49 : 48) + '</span> votos</p>' +
+      '<div class="mt-3 space-y-2">' + ops.map(function(o, i){
+        var meu = S.voto === i;
+        return '<button data-a="votar" data-v="' + i + '" ' + (S.votou ? 'disabled' : '') + ' class="relative w-full h-10 rounded-lg border ' + (meu ? 'border-gray-900' : 'border-gray-200') + ' overflow-hidden text-left ' + (S.votou ? 'cursor-default' : 'hover:border-gray-500') + '">' +
+          '<span class="absolute inset-y-0 left-0 bg-gray-100" style="width:' + (S.votou ? o[1] : 0) + '%"></span>' +
+          '<span class="relative flex items-center h-full px-3 gap-2 text-sm text-gray-900">' + (meu ? ic('check','w-3.5 h-3.5') : '') + o[0] +
+          '<span class="ml-auto font-mono text-xs ' + (S.votou ? 'text-gray-900' : 'text-gray-300') + ' tab-num">' + (S.votou ? o[1] + '%' : '—') + '</span></span></button>';
+      }).join('') + '</div>' +
+      (S.votou ? '<p class="text-xs text-gray-500 mt-3">Voto registrado. O tema vencedor vira aulão na aba Aulões.</p>' : '<p class="text-xs text-gray-400 mt-3">Os percentuais aparecem depois do seu voto.</p>') + '</div>';
+  }
+
+  h += '<section><h2 class="text-sm font-semibold text-gray-900 mb-3">Dúvidas mais frequentes</h2><div class="space-y-2">' +
+    duvidaItem('Por que a derivada de sen(2x) é 2cos(2x) e não cos(2x)?', 'respondida', 'Prof. Lorem Dolor · 18 marcaram como útil') +
+    duvidaItem('Como saber quando o limite lateral não existe?', 'respondida', 'Ipsum Dolor (monitor) · 11 marcaram como útil') +
+    (S.pedidoEnviado ? duvidaItem('Por que dy/dx fica −x/y em x² + y² = 25?', S.respostaChegou ? (S.resolvido ? 'resolvida' : 'respondida') : 'aguardando', 'sua dúvida · pedido #143', true) : '') +
+    '</div></section>';
+  return h;
+}
+function duvidaItem(t, st, sub, minha){
+  return '<div class="bg-white border ' + (minha ? 'border-dashed border-gray-400' : 'border-gray-200') + ' rounded-xl p-3.5">' +
+    '<div class="flex items-start gap-2"><p class="flex-1 text-sm text-gray-900 leading-snug">' + t + '</p>' +
+    '<span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-md whitespace-nowrap ' + (st === 'aguardando' ? 'border border-gray-300 text-gray-500' : 'bg-gray-100 text-gray-600') + '">' + st + '</span></div>' +
+    '<p class="text-xs text-gray-500 mt-1.5">' + sub + '</p></div>';
+}
+
+function fbEnviar(){
+  if (S.naFila){
+    return '<div class="border border-dashed border-gray-300 rounded-xl p-6 text-center bg-gray-50">' +
+      '<p class="font-mono text-[11px] text-gray-400">NA FILA · 23:10</p><h2 class="text-base font-semibold text-gray-900 mt-1">Sua dúvida entrou na fila</h2>' +
+      '<p class="text-sm text-gray-500 mt-1 leading-relaxed">A monitoria de CDI I atende das 8 h às 22 h. O pedido é criado e os monitores são avisados assim que o atendimento abrir.</p>' +
+      '<div class="mt-5">' + btn('Simular: chegou 8 h', 'data-a="abrir-horario"', null, 'w-full') + '</div></div>';
+  }
+  if (S.pedidoEnviado){
+    return '<div class="border border-gray-200 rounded-xl p-6 text-center bg-gray-50">' +
+      '<span class="w-10 h-10 rounded-full bg-gray-900 text-white grid place-items-center mx-auto">' + ic('check','w-5 h-5') + '</span>' +
+      '<p class="font-mono text-[11px] text-gray-400 mt-4">PEDIDO #143</p><h2 class="text-base font-semibold text-gray-900 mt-1">Dúvida enviada</h2>' +
+      '<p class="text-sm text-gray-500 mt-1 leading-relaxed">Os monitores de CDI I foram avisados. Você recebe uma notificação quando alguém responder.</p>' +
+      '<div class="mt-5 space-y-2">' + (S.respostaChegou ? btn('Ver a resposta', 'data-a="abrir-conv" data-v="ipsum"', null, 'w-full') : btn('Simular a resposta do monitor', 'data-a="simular-resposta"', null, 'w-full')) +
+      btn('Enviar outra', 'data-a="nova-duvida"', 'sec', 'w-full') + '</div></div>';
+  }
+  return '<div class="space-y-4">' +
+    '<div><span class="text-xs font-medium text-gray-700">O que você quer enviar?</span><div class="flex gap-2 mt-1.5 overflow-x-auto sem-barra -mx-6 px-6">' +
+    ['Dúvida de matéria','Problema no app','Sugestão','Pedir material'].map(function(t){ return chip(t, S.tipoEnvio === t, 'data-a="tipo-envio" data-v="' + t + '"'); }).join('') + '</div></div>' +
+    selecao('Matéria e turma', ['CDI I · turma 02','POO · turma 01','ÁLG LIN · turma 03','FÍS EXP · turma 02'], 'CDI I · turma 02', '') +
+    campo('Assunto', 'id="assunto" value="' + esc(S.assunto) + '" placeholder="Ex.: derivação implícita de uma circunferência"') +
+    area('Descreva', 'placeholder="O que você tentou e onde travou"') +
+    '<div class="rounded-xl border border-dashed border-gray-300 p-4">' +
+    '<p class="text-sm font-medium text-gray-900">Já perguntaram parecido</p><p class="text-xs text-gray-500 mt-0.5">Veja se alguma destas resolve antes de enviar.</p>' +
+    '<div class="mt-3 space-y-2">' +
+    '<div class="bg-white border border-gray-200 rounded-lg px-3 py-2.5"><p class="text-sm text-gray-900">Quando usar derivação implícita?</p><p class="text-[11px] text-gray-500 mt-0.5">respondida · 14 acharam útil</p></div>' +
+    '<div class="bg-white border border-gray-200 rounded-lg px-3 py-2.5"><p class="text-sm text-gray-900">De onde vem o y′ na derivada de y²?</p><p class="text-[11px] text-gray-500 mt-0.5">respondida · 9 acharam útil</p></div></div>' +
+    btn('Resolveu, cancelar envio', 'data-a="resolveu-triagem"', 'ghost', 'h-8 px-2 text-xs mt-2 -ml-2') + '</div>' +
+    btn('Enviar', 'data-a="enviar-duvida"', null, 'w-full') + '</div>';
+}
+
+function fbAuloes(){
+  var h = '';
+  if (S.aulaoMarcado){
+    h += '<div class="bg-white border border-gray-900 rounded-xl p-4">' + '<div class="flex items-center justify-between">' + rotulo('Confirmado') + '<span class="font-mono text-[11px] text-gray-500">' + (S.desempate ? 'escolhido após empate' : 'venceu com 52%') + '</span></div>' +
+      '<h2 class="text-base font-semibold text-gray-900 mt-2">' + esc(S.temaAulao) + '</h2><p class="text-xs text-gray-500">CDI I · com Ipsum Dolor (monitor)</p>' +
+      '<div class="grid grid-cols-3 gap-2 mt-3">' + [['Data','18/09'],['Hora','19:00'],['Sala','201']].map(function(x){ return '<div class="rounded-lg bg-gray-50 border border-gray-100 p-2.5"><p class="text-[10px] text-gray-500">' + x[0] + '</p><p class="font-mono text-sm font-medium text-gray-900">' + x[1] + '</p></div>'; }).join('') + '</div>' +
+      '<div class="mt-3">' + btn('Ver no calendário', 'data-a="ir-cal-mes"', 'sec', 'w-full h-9 text-xs') + '</div></div>';
+  } else if (S.enqueteAberta){
+    h += card(rotulo('Em votação') + '<h2 class="text-base font-semibold text-gray-900 mt-2">Regra da cadeia na prática</h2><p class="text-xs text-gray-500">Lidera com 52% · enquete encerra em 2 dias</p>' +
+      barra(52, 'mt-3') + (equipe() ? '<div class="mt-4">' + (S.etapaAulao ? '' : btn('Encerrar enquete e marcar data', 'data-a="encerrar-enquete"', null, 'w-full h-9 text-xs') + '<div class="mt-2">' + btn('Simular empate', 'data-a="simular-empate"', 'sec', 'w-full h-9 text-xs') + '</div>') + '</div>' : '<div class="mt-4">' + btn('Votar na enquete', 'data-a="fb-aba" data-v="turma"', 'sec', 'w-full h-9 text-xs') + '</div>'));
+    if (S.etapaAulao === 'empate'){
+      h += '<div class="bg-white border border-gray-900 rounded-xl p-4">' + rotulo('Empate') +
+        '<h2 class="text-base font-semibold text-gray-900 mt-2">38% para cada tema</h2>' +
+        '<p class="text-xs text-gray-500">A enquete encerrou sem vencedor. Como monitor, escolha o tema do aulão.</p>' +
+        '<div class="mt-3 space-y-2">' + btn('Regra da cadeia na prática', 'data-a="desempatar" data-v="Regra da cadeia na prática"', 'sec', 'w-full h-9 text-xs') +
+        btn('Derivação implícita passo a passo', 'data-a="desempatar" data-v="Derivação implícita passo a passo"', 'sec', 'w-full h-9 text-xs') + '</div></div>';
+    }
+    if (S.etapaAulao === 'definir'){
+      h += '<div class="bg-white border border-gray-900 rounded-xl p-4">' + rotulo('Definir data e sala') +
+        '<h2 class="text-base font-semibold text-gray-900 mt-2">' + esc(S.temaAulao) + '</h2>' +
+        '<div class="flex gap-2 mt-3">' + chip('qui 18/09 · 19 h', S.dataAulao === '18', 'data-a="data-aulao" data-v="18"') +
+        chip('seg 22/09 · 19 h', S.dataAulao === '22', 'data-a="data-aulao" data-v="22"') + '</div>' +
+        '<div class="mt-3">' + campo('Sala', 'value="201"') + '</div>' +
+        (S.conflito ? '<p class="text-xs text-red-600 mt-3 leading-relaxed">Esse horário conflita com a Prova 2 de CDI I (22/09 · 19 h). Escolha outro horário.</p>' : '') +
+        '<div class="mt-4">' + btn('Confirmar aulão', 'data-a="confirmar-aulao"', null, 'w-full h-9 text-xs') + '</div></div>';
+    }
+  } else {
+    h += vazio('Nenhum aulão em votação', 'Quando um tópico acumula dúvidas, a monitoria abre uma enquete e ela aparece aqui.', equipe() ? btn('Ver onde a turma trava', 'data-a="fb-aba" data-v="turma"', 'sec', 'h-9 text-xs') : '');
+  }
+  h += '<section><h2 class="text-sm font-semibold text-gray-900 mb-3">Aulões anteriores</h2>' + card(
+    [['Limites e continuidade','CDI I','28 ago','41 presentes'],['Encapsulamento em Java','POO','21 ago','27 presentes']].map(function(a){
+      return '<div class="flex items-center gap-3 px-4 py-3"><div class="flex-1 min-w-0"><p class="text-sm text-gray-900">' + a[0] + '</p><p class="text-xs text-gray-500">' + a[1] + ' · ' + a[3] + '</p></div><span class="font-mono text-[11px] text-gray-400">' + a[2] + '</span></div>';
+    }).join(''), 'divide-y divide-gray-100') + '</section>';
+  return h;
+}
+
+function fbAvaliacoes(){
+  var dist = [[5,128],[4,64],[3,14],[2,4],[1,2]], total = 212, extra = S.minhaAval ? 1 : 0;
+  var lista = (S.minhaAval ? [S.minhaAval] : []).concat(AVALIACOES).filter(function(a){ return S.avalFiltro === 'Todas' || a.cat === S.avalFiltro; });
+  var h = card('<div class="flex items-center gap-5"><div class="text-center"><p class="font-mono text-4xl font-medium text-gray-900 tab-num">4.5</p><div class="mt-1">' + estrelas(4.5) + '</div>' +
+    '<p class="text-[11px] text-gray-500 mt-1"><span class="font-mono">' + (total + extra) + '</span> avaliações</p></div>' +
+    '<div class="flex-1 space-y-1.5">' + dist.map(function(d){
+      return '<div class="flex items-center gap-2 text-[11px]"><span class="font-mono text-gray-500 w-3">' + d[0] + '</span>' +
+        '<div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gray-900 rounded-full" style="width:' + Math.round(d[1] / 128 * 100) + '%"></div></div>' +
+        '<span class="font-mono text-gray-400 w-7 text-right tab-num">' + d[1] + '</span></div>';
+    }).join('') + '</div></div>');
+
+  h += S.minhaAval
+    ? '<div class="flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">' + ic('check','w-4 h-4 text-gray-900') + '<p class="text-sm text-gray-700">Obrigado! Sua avaliação já aparece na lista.</p></div>'
+    : card('<h2 class="text-sm font-semibold text-gray-900">Avaliar a plataforma</h2>' +
+      '<div class="flex gap-1 mt-3" role="radiogroup" aria-label="Nota">' + [1,2,3,4,5].map(function(i){
+        return '<button data-a="aval-nota" data-v="' + i + '" role="radio" aria-checked="' + (S.avalNota === i) + '" aria-label="' + i + ' estrela' + (i > 1 ? 's' : '') + '" class="w-9 h-9 grid place-items-center rounded-lg hover:bg-gray-100">' +
+          (i <= S.avalNota ? icFill('star','w-6 h-6 text-gray-900') : ic('star','w-6 h-6 text-gray-300')) + '</button>';
+      }).join('') + '<span class="ml-2 self-center text-xs text-gray-500">' + (['Toque para dar nota','Ruim','Fraco','Ok','Bom','Excelente'][S.avalNota]) + '</span></div>' +
+      '<div class="mt-3 space-y-3">' + selecao('Categoria', ['Geral','Calendário','Matérias','Chat'], S.avalCat, 'id="avalCat"') +
+      area('Comentário', 'id="avalTexto" placeholder="O que funcionou e o que falta?"', esc(S.avalTexto)) +
+      btn('Enviar avaliação', 'data-a="enviar-aval"', null, 'w-full') + '</div>');
+
+  h += chips(['Todas','Geral','Calendário','Matérias','Chat'], S.avalFiltro, 'aval-filtro');
+  h += lista.length ? '<div class="space-y-3">' + lista.map(function(a){
+    return card('<div class="flex items-center gap-3">' + avatar(a.nome, 'w-9 h-9 text-xs') + '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><span class="text-sm font-medium text-gray-900 truncate">' + a.nome + '</span>' + papel(a.papel) + '</div>' +
+      '<div class="flex items-center gap-2 mt-0.5">' + estrelas(a.nota, 'w-3 h-3') + '<span class="font-mono text-[10px] text-gray-400">' + a.data + '</span></div></div>' + sigla(a.cat.toUpperCase()) + '</div>' +
+      '<p class="text-sm text-gray-600 mt-3 leading-relaxed">' + esc(a.texto) + '</p>');
+  }).join('') + '</div>' : vazio('Sem avaliações em ' + S.avalFiltro, 'Seja a primeira pessoa a avaliar esta parte.');
+  return h;
+}
+
+/* ============================== CONFIG ============================== */
+var SECOES = [
+  ['perfil','Perfil','Foto, nome e dados acadêmicos','user'],
+  ['notificacoes','Notificações','Push e e-mail','bell'],
+  ['aparencia','Aparência','Tema, densidade, fonte e idioma','sun'],
+  ['privacidade','Privacidade','Visibilidade e seus dados','eye'],
+  ['acessibilidade','Acessibilidade','Contraste, animações e leitor de tela','access'],
+  ['conta','Conta e segurança','Senha, 2FA e sessões','lock']
+];
+function secao(t, inner){ return '<div class="bg-white border border-gray-200 rounded-xl overflow-hidden">' + (t ? '<div class="px-4 py-3 border-b border-gray-100"><h2 class="text-sm font-medium text-gray-900">' + t + '</h2></div>' : '') + inner + '</div>'; }
+function linha(rot, sub, ctrl){ return '<div class="flex items-center gap-3 px-4 py-3"><div class="flex-1 min-w-0"><p class="text-sm text-gray-900">' + rot + '</p>' + (sub ? '<p class="text-xs text-gray-500 mt-0.5">' + sub + '</p>' : '') + '</div>' + ctrl + '</div>'; }
+function salvar(){ return btn('Salvar alterações', 'data-a="salvar"', null, 'w-full'); }
+
+telas.config = function(){
+  return '<div class="p-6 space-y-5">' + titulo('Configurações') +
+    '<button data-a="abrir-cfg" data-v="perfil" class="w-full flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4 text-left hover:border-gray-500 hover:shadow-sm transition-all">' +
+    '<span class="w-12 h-12 rounded-full bg-gray-200 text-gray-700 font-medium grid place-items-center">' + USUARIO.iniciais + '</span>' +
+    '<span class="flex-1 min-w-0"><span class="block text-sm font-medium text-gray-900">' + USUARIO.nome + '</span><span class="block text-xs text-gray-500 truncate">' + USUARIO.email + '</span>' +
+    '<span class="inline-block mt-1">' + papel(S.cargo) + '</span></span>' + ic('right','w-4 h-4 text-gray-300') + '</button>' +
+    secao('', SECOES.map(function(s){
+      return '<button data-a="abrir-cfg" data-v="' + s[0] + '" class="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50">' +
+        '<span class="w-9 h-9 rounded-lg bg-gray-100 text-gray-600 grid place-items-center">' + ic(s[3],'w-4 h-4') + '</span>' +
+        '<span class="flex-1 min-w-0"><span class="block text-sm text-gray-900">' + s[1] + '</span><span class="block text-xs text-gray-500">' + s[2] + '</span></span>' + ic('right','w-4 h-4 text-gray-300') + '</button>';
+    }).join('')).replace('overflow-hidden', 'overflow-hidden divide-y divide-gray-100') +
+    btn(ic('logout','w-4 h-4') + 'Sair', 'data-a="sair"', 'sec', 'w-full') +
+    '<p class="text-center font-mono text-[10px] text-gray-400">Hub de Estudos · versão 0.9 · protótipo</p></div>';
+};
+
+telas.cfg = function(){
+  var sec = SECOES.filter(function(s){ return s[0] === S.cfgSec; })[0];
+  var h = '<div class="p-6 space-y-5">' + voltar('Configurações') + titulo(sec[1], sec[2]);
+  var dv = function(inner){ return inner; };
+
+  if (S.cfgSec === 'perfil'){
+    h += secao('Foto', '<div class="flex items-center gap-4 px-4 py-4"><span class="w-16 h-16 rounded-full bg-gray-200 text-gray-700 text-lg font-medium grid place-items-center">' + USUARIO.iniciais + '</span>' +
+        '<div class="flex flex-col gap-2">' + btn('Alterar foto', '', 'sec', 'h-8 text-xs') + '<span class="text-[11px] text-gray-400">JPG ou PNG, até 2 MB</span></div></div>') +
+      secao('Informações pessoais', '<div class="p-4 space-y-4">' + campo('Nome', 'value="' + USUARIO.nome + '"') + campo('Nome de exibição', 'value="Lorem"') +
+        '<div>' + campo('E-mail institucional', 'value="' + USUARIO.email + '" disabled', 'bg-gray-50 text-gray-500') + '<p class="text-[11px] text-gray-400 mt-1">Vem da universidade e não pode ser alterado.</p></div>' +
+        area('Bio', 'placeholder="Conte o que você está estudando"', 'Curtindo Cálculo mais do que esperava.') + '</div>') +
+      secao('Dados acadêmicos', '<div class="divide-y divide-gray-100">' +
+        [['Matrícula', '<span class="font-mono">' + USUARIO.matricula + '</span>'],['Curso', USUARIO.curso],['Período', USUARIO.periodo],['Turno', USUARIO.turno],['Cargo', papel(S.cargo)]].map(function(r){
+          return '<div class="flex items-center justify-between px-4 py-3"><span class="text-xs text-gray-500">' + r[0] + '</span><span class="text-sm text-gray-900">' + r[1] + '</span></div>';
+        }).join('') + '</div><p class="px-4 py-3 border-t border-gray-100 bg-gray-50 text-[11px] text-gray-500 leading-relaxed">O cargo (aluno, monitor, professor) só muda pela coordenação, no painel do Supabase.</p>') + salvar();
+  }
+
+  if (S.cfgSec === 'notificacoes'){
+    h += secao('', '<div class="grid grid-cols-[1fr_52px_52px] items-center px-4 py-2.5 border-b border-gray-100 bg-gray-50"><span class="font-mono text-[10px] uppercase tracking-wider text-gray-400">Avisar sobre</span><span class="font-mono text-[10px] uppercase text-gray-400 text-center">Push</span><span class="font-mono text-[10px] uppercase text-gray-400 text-center">E-mail</span></div>' +
+      '<div class="divide-y divide-gray-100">' + NOTIF_ITENS.map(function(t, i){
+        var v = S.notif[t];
+        return '<div class="grid grid-cols-[1fr_52px_52px] items-center px-4 py-3"><span class="text-sm text-gray-900 pr-2 leading-snug">' + t + '</span>' +
+          '<span class="flex justify-center">' + toggle(v[0], 'data-a="notif" data-v="' + i + '-0"', t + ' por push') + '</span>' +
+          '<span class="flex justify-center">' + toggle(v[1], 'data-a="notif" data-v="' + i + '-1"', t + ' por e-mail') + '</span></div>';
+      }).join('') + '</div>') +
+      secao('Silenciar', linha('Não perturbe à noite', 'Das 23 h às 7 h, só avisos de prova', toggle(true, 'data-a="noop"', 'Não perturbe'))) + salvar();
+  }
+
+  if (S.cfgSec === 'aparencia'){
+    h += secao('Tema', '<div class="p-4">' + segmentado([['Claro','Claro'],['Escuro','Escuro'],['Sistema','Sistema']], S.tema, 'tema') + '</div>') +
+      secao('Densidade', '<div class="p-4">' + segmentado([['Compacta','Compacta'],['Confortável','Confortável']], S.densidade, 'densidade') + '<p class="text-[11px] text-gray-400 mt-2">Compacta mostra mais tarefas por tela.</p></div>') +
+      secao('Tamanho da fonte', '<div class="p-4">' + segmentado([['Pequena','Pequena'],['Média','Média'],['Grande','Grande']], S.fonte, 'fonte') +
+        '<p class="mt-3 text-gray-700 ' + ({Pequena:'text-xs', 'Média':'text-sm', Grande:'text-base'})[S.fonte] + '">Assim fica o texto das listas e mensagens.</p></div>') +
+      secao('Idioma', '<div class="p-4">' + selecao('Idioma do app', ['Português (Brasil)','English','Español'], S.idioma, 'id="idioma"') + '</div>') + salvar();
+  }
+
+  if (S.cfgSec === 'privacidade'){
+    h += secao('Visibilidade', '<div class="p-4">' + selecao('Quem vê meu perfil', ['Colegas da turma','Só monitores e professores','Ninguém'], S.visibilidade, 'id="visibilidade"') + '</div>' +
+        '<div class="border-t border-gray-100 divide-y divide-gray-100">' + linha('Mostrar quando estou online', 'Aparece no chat para os colegas', toggle(S.online, 'data-a="priv" data-v="online"', 'Status online')) +
+        linha('Uso anônimo', 'Ajuda a melhorar o app; nada identifica você', toggle(S.rastreio, 'data-a="priv" data-v="rastreio"', 'Uso anônimo')) + '</div>') +
+      secao('Seus dados', '<div class="divide-y divide-gray-100">' + linha('Exportar meus dados', 'Arquivo .zip com tarefas, favoritos e mensagens', btn('Exportar', 'data-a="toast" data-v="Exportação iniciada. O link chega no seu e-mail."', 'sec', 'h-8 text-xs')) +
+        linha('Limpar histórico de estudo', 'Zera horas e tópicos concluídos', btn('Limpar', 'data-a="toast" data-v="Histórico limpo."', 'perigo', 'h-8 text-xs')) + '</div>') + salvar();
+  }
+
+  if (S.cfgSec === 'acessibilidade'){
+    var desc = { 'Alto contraste':'Bordas e textos mais escuros', 'Reduzir animações':'Tira transições e rolagem suave', 'Otimizar para leitor de tela':'Descrições extras em gráficos e ícones', 'Atalhos de teclado':'Com teclado físico conectado', 'Destaque de foco reforçado':'Contorno grosso no item selecionado' };
+    h += secao('', '<div class="divide-y divide-gray-100">' + Object.keys(S.a11y).map(function(k){ return linha(k, desc[k], toggle(S.a11y[k], 'data-a="a11y" data-v="' + k + '"', k)); }).join('') + '</div>') + salvar();
+  }
+
+  if (S.cfgSec === 'conta'){
+    h += secao('Senha', '<div class="p-4 space-y-3">' + campo('Senha atual', 'type="password" placeholder="••••••"') + campo('Nova senha', 'type="password" placeholder="Mínimo de 6 caracteres"') + btn('Alterar senha', 'data-a="toast" data-v="Senha alterada."', 'sec', 'w-full h-9 text-xs') + '</div>') +
+      secao('Verificação em duas etapas', linha('App autenticador', S.twofa ? 'Ativa desde 12 ago' : 'Desativada', toggle(S.twofa, 'data-a="twofa"', 'Verificação em duas etapas'))) +
+      secao('Sessões ativas', '<div class="divide-y divide-gray-100">' +
+        linha('Este celular', 'Chrome · Android · agora', '<span class="font-mono text-[10px] uppercase text-gray-400">atual</span>') +
+        (S.sessoes > 1 ? linha('Notebook', 'Firefox · Linux · ontem, 21:10', btn('Encerrar', 'data-a="encerrar-sessao"', 'sec', 'h-8 text-xs')) : '') + '</div>') +
+      btn(ic('logout','w-4 h-4') + 'Sair', 'data-a="sair"', 'sec', 'w-full') +
+      '<div class="rounded-xl border border-red-200 overflow-hidden"><div class="px-4 py-3 border-b border-red-100"><h2 class="text-sm font-medium text-red-600">Zona de perigo</h2></div>' +
+      '<div class="divide-y divide-gray-100">' + linha('Sair de todos os dispositivos', 'Encerra todas as sessões, inclusive esta', btn('Sair de todos', 'data-a="sair"', 'perigo', 'h-8 text-xs')) +
+      linha('Excluir conta', 'Apaga seus dados em 30 dias', btn('Excluir', 'data-a="toast" data-v="Enviamos a confirmação para o seu e-mail."', 'perigo', 'h-8 text-xs')) + '</div></div>';
+  }
+  return h + '</div>';
+};
+
+/* ============================== render ============================== */
+var fone = document.getElementById('fone');
+var ultimaChave = '';
+
+function chaveTela(){ return S.tela ? S.tela + ':' + (S.materia||'') + (S.estudo||'') + (S.conv||'') + (S.cfgSec||'') : 'tab:' + S.tab; }
+
+function render(){
+  var corpo = document.getElementById('corpo');
+  var rolagem = corpo ? corpo.scrollTop : 0;
+  var chave = chaveTela();
+  var conteudo = S.tela ? telas[S.tela]() : telas[S.tab]();
+  var sobre = '';
+  if (S.tarefa) sobre += modalTarefa();
+  if (S.sheet) sobre += sheetEquipe();
+  if (S.toast) sobre += '<div role="status" class="absolute left-1/2 -translate-x-1/2 bottom-20 z-40 max-w-[85%] px-3.5 py-2 rounded-lg bg-gray-900 text-white text-xs text-center shadow-lg">' + esc(S.toast) + '</div>';
+  fone.innerHTML = cabecalho() + '<main id="corpo" class="flex-1 overflow-y-auto rolagem bg-white">' + conteudo + '</main>' + barraInferior() + sobre;
+  var novo = document.getElementById('corpo');
+  if (chave === ultimaChave) novo.scrollTop = rolagem;
+  else if (S.tela === 'conversa') novo.scrollTop = novo.scrollHeight;
+  ultimaChave = chave;
+  var sel = document.getElementById('cargo'); if (sel) sel.value = S.cargo;
+  // avisa o protótipo desktop quando o cargo muda aqui dentro (login, sair)
+  if (cargoAvisado === null) cargoAvisado = S.cargo;
+  else if (S.cargo !== cargoAvisado){ cargoAvisado = S.cargo; if (EMBED) window.parent.postMessage({ hub:1, tipo:'cargo', v:S.cargo }, '*'); }
+}
+
+var timerToast;
+function toast(t){ S.toast = t; render(); clearTimeout(timerToast); timerToast = setTimeout(function(){ S.toast = ''; render(); }, 2400); }
+function abrir(tela){ S.pilha.push({ tela:S.tela, tab:S.tab }); S.tela = tela; render(); }
+function exigirLogin(motivo){ S.motivo = motivo; S.erroLogin = ''; abrir('entrar'); }
+
+var ROTULO_ABA = { calendario:'o calendário', chat:'o chat', feedback:'Dúvidas & Feedback', config:'as configurações' };
+
+/* ============================== eventos ============================== */
+fone.addEventListener('click', function(ev){
+  var alvo = ev.target.closest('[data-a]');
+  if (!alvo || !fone.contains(alvo)) return;
+  // clique dentro do diálogo não fecha o fundo
+  if (alvo.getAttribute('data-a') && /fechar-(modal|sheet)/.test(alvo.getAttribute('data-a')) && alvo.hasAttribute('class') && alvo.className.indexOf('absolute inset-0') >= 0 && ev.target.closest('[data-parar]')) return;
+  var a = alvo.getAttribute('data-a'), v = alvo.getAttribute('data-v');
+
+  switch (a){
+    case 'tab':
+      if (!logado() && ROTULO_ABA[v]){ S.tab = v; S.pilha = []; S.tela = null; exigirLogin('Entre para ver ' + ROTULO_ABA[v] + '.'); return; }
+      S.tab = v; S.tela = null; S.pilha = []; S.tarefa = null; S.sheet = false; render(); return;
+    case 'voltar':
+      var p = S.pilha.pop();
+      if (p){ S.tela = p.tela; S.tab = p.tab; } else S.tela = null;
+      if (!logado() && !S.tela && ROTULO_ABA[S.tab]) S.tab = 'inicio';
+      render(); return;
+    case 'ir-entrar': exigirLogin(''); return;
+    case 'entrar-aba': S.entrarAba = v; S.erroLogin = ''; S.erroGeral = ''; render(); return;
+    case 'login':
+      var email = (document.getElementById('email').value || '').trim().toLowerCase();
+      S.email = email; S.erroGeral = '';
+      if (!email){ S.erroLogin = 'Informe seu e-mail institucional.'; render(); return; }
+      if (!/@(sga\.)?exemplo\.br$/.test(email)){ S.erroLogin = 'Esse e-mail não é da universidade. Use o que termina em @sga.exemplo.br.'; render(); return; }
+      S.erroLogin = '';
+      // F1 · “Credenciais corretas?”: no protótipo a senha certa é 123456
+      var senha = (document.getElementById('senha') || {}).value || '';
+      if (S.entrarAba === 'criar' && senha.length < 6){ S.erroGeral = 'A senha precisa ter pelo menos 6 caracteres.'; render(); return; }
+      if (S.entrarAba !== 'criar' && senha !== '123456'){ S.erroGeral = 'E-mail ou senha incorretos.'; render(); return; }
+      S.cargo = 'aluno'; S.motivo = ''; S.tela = null; S.pilha = [];
+      toast('Você entrou como ' + email); return;
+    case 'sair':
+      S.cargo = 'visitante'; S.tab = 'inicio'; S.tela = null; S.pilha = []; S.cfgSec = null; toast('Você saiu da conta.'); return;
+
+    case 'abrir-notif': S.notifLidas = true; abrir('notificacoes'); return;
+    case 'abrir-perfil': S.tab = 'config'; S.tela = null; S.pilha = []; S.cfgSec = 'perfil'; abrir('cfg'); return;
+    case 'notif-filtro': S.notifFiltro = v; render(); return;
+    case 'marcar-lidas': S.notifLidas = true; toast('Tudo marcado como lido.'); return;
+
+    // calendário
+    case 'cal-vista': S.calVista = v; render(); return;
+    case 'cal-mat': S.calMat = v; render(); return;
+    case 'semana': S.semana = v === '0' ? 0 : S.semana + Number(v); S.diaSel = null; render(); return;
+    case 'dia': S.diaSel = S.diaSel === Number(v) ? null : Number(v); render(); return;
+    case 'mes-dia': S.mesDia = Number(v); render(); return;
+    case 'abrir-tarefa': S.tarefa = Number(v); render(); return;
+    case 'fechar-modal': if (ev.target.closest('[data-parar]') && alvo.hasAttribute('data-parar') === false && alvo.className.indexOf('inset-0') >= 0) return; S.tarefa = null; render(); return;
+    case 'ir-cal-mes': S.tab = 'calendario'; S.tela = null; S.pilha = []; S.calVista = 'mes'; S.mesDia = S.aulaoMarcado ? 18 : 14; render(); return;
+    case 'importar-feed': S.feedSalvo = true; toast('68 eventos importados do Canvas.'); return;
+    case 'copiar-feed': S.copiado = true; render(); setTimeout(function(){ S.copiado = false; render(); }, 1800); return;
+    case 'novo-link': toast('Link novo gerado. O antigo parou de funcionar.'); return;
+
+    // matérias e estudos
+    case 'mat-aba': S.matAba = v; render(); return;
+    case 'abrir-materia': S.tarefa = null; S.materia = v; if (S.tab !== 'materias' && S.tab !== 'inicio'){ S.tab = 'materias'; S.pilha = []; S.tela = null; } abrir('materia'); return;
+    case 'limpar-mat': S.buscaMat = ''; render(); return;
+    case 'ir-estudos': S.tab = 'materias'; S.matAba = 'estudos'; S.tela = null; S.pilha = []; render(); return;
+    case 'est-mat': S.estMat = v; render(); return;
+    case 'limpar-busca': S.buscaEst = ''; S.estMat = 'todas'; render(); return;
+    case 'fav':
+      if (!logado()){ exigirLogin('Entre para favoritar estudos.'); return; }
+      S.favs[v] = !S.favs[v]; toast(S.favs[v] ? 'Adicionado aos favoritos.' : 'Removido dos favoritos.'); return;
+    case 'abrir-estudo':
+      S.estudo = Number(v); S.confirmarExclusao = false; S.comentarioNovo = '';
+      if (S.tela === 'notificacoes'){ S.pilha = []; S.tela = null; S.tab = 'materias'; S.matAba = 'estudos'; }
+      abrir('estudo'); return;
+    case 'est-status': if (!logado()){ exigirLogin('Entre para acompanhar seu progresso.'); return; } S.estStatus[S.estudo] = v; render(); return;
+    case 'comentar':
+      if (!logado()){ exigirLogin('Entre para comentar.'); return; }
+      var txt = (document.getElementById('comentario').value || '').trim();
+      if (!txt){ toast('Escreva o comentário antes de enviar.'); return; }
+      S.meusComentarios = S.meusComentarios || {}; S.meusComentarios[S.estudo] = (S.meusComentarios[S.estudo] || []).concat([{ nome:USUARIO.nome, papel:S.cargo === 'aluno' ? 'Aluno' : S.cargo === 'monitor' ? 'Monitor' : 'Professor', data:'agora', texto:txt }]);
+      S.comentariosEnviados = S.comentariosEnviados || {}; S.comentariosEnviados[S.estudo] = (S.comentariosEnviados[S.estudo] || 0) + 1;
+      S.comentarioNovo = ''; toast('Comentário publicado.'); return;
+    case 'levar-duvida':
+      if (!logado()){ exigirLogin('Entre para enviar dúvidas.'); return; }
+      S.assunto = estudo(S.estudo).titulo; S.fbAba = 'enviar'; S.tab = 'feedback'; S.tela = null; S.pilha = []; render(); return;
+    case 'pedir-material':
+      S.assunto = v ? 'Material de ' + v : (S.buscaEst ? 'Material sobre ' + S.buscaEst : ''); S.tipoEnvio = 'Pedir material'; S.fbAba = 'enviar';
+      if (!logado()){ S.tab = 'feedback'; S.tela = null; S.pilha = []; exigirLogin('Entre para pedir o material. Seu pedido fica guardado.'); return; }
+      S.tab = 'feedback'; S.tela = null; S.pilha = []; render(); return;
+    case 'sheet': S.sheet = true; render(); return;
+    case 'fechar-sheet': S.sheet = false; S.confirmarExclusao = false; render(); return;
+    case 'revisar': S.revisados[S.estudo] = true; S.sheet = false; toast('Marcado como revisado.'); return;
+    case 'pedir-exclusao': S.confirmarExclusao = true; render(); return;
+    case 'cancelar-exclusao': S.confirmarExclusao = false; render(); return;
+    case 'excluir': S.excluidos[S.estudo] = true; S.sheet = false; S.confirmarExclusao = false; var pv = S.pilha.pop(); S.tela = pv ? pv.tela : null; toast('Estudo excluído.'); return;
+    case 'ir-publicar': abrir('publicar'); return;
+    case 'publicar': S.publicado = true; toast('Estudo publicado. Já aparece no catálogo.'); return;
+    case 'importar-lote': S.importou = true; render(); return;
+
+    // chat
+    case 'chat-aba': S.chatAba = v; render(); return;
+    case 'caixa-filtro': S.caixaFiltro = v; render(); return;
+    case 'abrir-conv':
+      if (!logado()){ exigirLogin('Entre para ver o chat.'); return; }
+      var cv = conversa(v); if (cv && v !== 'ipsum') cv.nao = 0;
+      if (S.tab !== 'chat'){ S.tab = 'chat'; S.chatAba = 'conversas'; S.tela = null; S.pilha = []; }
+      S.conv = v; S.rascunho = ''; abrir('conversa'); return;
+    case 'enviar-msg': enviarMensagem(); return;
+    case 'resolveu':
+      S.resolvido = v === 'sim';
+      toast(S.resolvido ? 'Obrigado! A dúvida foi marcada como útil.' : 'O monitor foi avisado de que ainda não resolveu.'); return;
+
+    // dúvidas & feedback
+    case 'fb-aba': S.fbAba = v; render(); return;
+    case 'ir-fb': S.tab = 'feedback'; S.fbAba = v || 'turma'; S.tela = null; S.pilha = []; render(); return;
+    case 'fb-mat': S.fbMat = v; render(); return;
+    case 'abrir-enquete': S.enqueteAberta = true; toast('Enquete aberta. A turma de CDI I foi avisada.'); return;
+    case 'relatorio': toast('Relatório enviado ao Prof. Lorem Dolor.'); return;
+    case 'votar': if (S.votou) return; S.votou = true; S.voto = Number(v); render(); return;
+    case 'marcar-aulao':
+    case 'encerrar-enquete': S.etapaAulao = 'definir'; S.temaAulao = 'Regra da cadeia na prática'; S.desempate = false; S.conflito = false; render(); return;
+    case 'simular-empate': S.etapaAulao = 'empate'; render(); return;
+    case 'desempatar': S.temaAulao = v; S.desempate = true; S.etapaAulao = 'definir'; S.conflito = false; render(); return;
+    case 'data-aulao': S.dataAulao = v; S.conflito = false; render(); return;
+    case 'confirmar-aulao':
+      // F4 · “Horário livre?”: 22/09 cai no dia da prova
+      if (S.dataAulao === '22'){ S.conflito = true; render(); return; }
+      S.aulaoMarcado = true; S.etapaAulao = null; toast('Aulão marcado para 18/09 às 19 h.'); return;
+    case 'tipo-envio': S.tipoEnvio = v; render(); return;
+    case 'resolveu-triagem': S.fbAba = 'turma'; S.assunto = ''; toast('Que bom! Nada foi enviado.'); return;
+    case 'enviar-duvida':
+      if (S.foraHorario){ S.naFila = true; render(); return; }
+      S.pedidoEnviado = true; S.respostaChegou = false; S.resolvido = null; render(); return;
+    case 'abrir-horario': S.naFila = false; S.pedidoEnviado = true; S.respostaChegou = false; S.resolvido = null; render(); return;
+    case 'nova-duvida': S.naFila = false; S.pedidoEnviado = false; S.respostaChegou = false; S.resolvido = null; S.assunto = ''; render(); return;
+    case 'simular-resposta': S.respostaChegou = true; S.resolvido = null; S.notifLidas = false; toast('Nova notificação: Ipsum Dolor respondeu.'); return;
+    case 'aval-nota': S.avalNota = Number(v); render(); return;
+    case 'aval-filtro': S.avalFiltro = v; render(); return;
+    case 'enviar-aval':
+      if (!S.avalNota){ toast('Escolha de 1 a 5 estrelas.'); return; }
+      S.minhaAval = { nome:USUARIO.nome, papel:S.cargo === 'aluno' ? 'Aluno' : 'Monitor', nota:S.avalNota, cat:S.avalCat, data:'agora', texto:S.avalTexto.trim() || 'Sem comentário.' };
+      render(); return;
+
+    // config
+    case 'abrir-cfg': if (S.tab !== 'config'){ S.tab = 'config'; S.tela = null; S.pilha = []; } S.cfgSec = v; abrir('cfg'); return;
+    case 'notif': var pr = v.split('-'), k = NOTIF_ITENS[Number(pr[0])]; S.notif[k][Number(pr[1])] = !S.notif[k][Number(pr[1])]; render(); return;
+    case 'tema': S.tema = v; render(); return;
+    case 'densidade': S.densidade = v; render(); return;
+    case 'fonte': S.fonte = v; render(); return;
+    case 'priv': S[v] = !S[v]; render(); return;
+    case 'a11y': S.a11y[v] = !S.a11y[v]; render(); return;
+    case 'twofa': S.twofa = !S.twofa; render(); return;
+    case 'encerrar-sessao': S.sessoes = 1; toast('Sessão do notebook encerrada.'); return;
+    case 'salvar': toast('Alterações salvas.'); return;
+    case 'toast': toast(v); return;
+  }
+});
+
+function enviarMensagem(){
+  var inp = document.getElementById('rascunho');
+  var t = (inp && inp.value || '').trim();
+  if (!t) return;
+  var c = conversa(S.conv), agora = new Date();
+  c.msgs.push({ de:'eu', t:t, h:pad(agora.getHours()) + ':' + pad(agora.getMinutes()) });
+  c.hora = pad(agora.getHours()) + ':' + pad(agora.getMinutes());
+  S.rascunho = '';
+  render();
+  var novo = document.getElementById('rascunho'); if (novo) novo.focus();
+}
+
+fone.addEventListener('input', function(ev){
+  var id = ev.target.id;
+  if (id === 'buscaEst' || id === 'buscaMat'){
+    S[id] = ev.target.value;
+    var pos = ev.target.selectionStart;
+    render();
+    var n = document.getElementById(id); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} }
+  }
+  if (id === 'rascunho') S.rascunho = ev.target.value;
+  if (id === 'assunto') S.assunto = ev.target.value;
+  if (id === 'comentario') S.comentarioNovo = ev.target.value;
+  if (id === 'avalTexto') S.avalTexto = ev.target.value;
+});
+fone.addEventListener('change', function(ev){
+  var id = ev.target.id;
+  if (id === 'avalCat') S.avalCat = ev.target.value;
+  if (id === 'idioma') S.idioma = ev.target.value;
+  if (id === 'visibilidade') S.visibilidade = ev.target.value;
+});
+fone.addEventListener('keydown', function(ev){
+  if (ev.key === 'Enter' && ev.target.id === 'rascunho'){ ev.preventDefault(); enviarMensagem(); return; }
+  if (ev.key === 'Enter' && ev.target.id === 'email'){ ev.preventDefault(); var b = fone.querySelector('[data-a="login"]'); if (b) b.click(); return; }
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.getAttribute('role') === 'button'){ ev.preventDefault(); ev.target.click(); }
+  if (ev.key === 'Escape' && (S.tarefa || S.sheet)){ S.tarefa = null; S.sheet = false; render(); }
+});
+
+/* ============================== painel do protótipo ============================== */
+function mudarCargo(v){
+  if (v === S.cargo) return;
+  S.cargo = v; S.sheet = false; S.tarefa = null;
+  if (!logado() && (S.tela || ROTULO_ABA[S.tab])){ S.tela = null; S.pilha = []; S.tab = 'inicio'; }
+  render();
+}
+// as 4 tarefas do teste de usabilidade, iguais às do protótipo desktop
+function roteiro(r){
+  var fh = S.foraHorario; S = clone(INICIAL); S.foraHorario = fh;   // horário vem da barra de teste
+  if (r === '1'){ S.cargo = 'visitante'; }
+  if (r === '2'){ S.tab = 'materias'; S.matAba = 'estudos'; }
+  if (r === '3'){ S.tab = 'feedback'; S.fbAba = 'turma'; S.assunto = 'Derivação implícita de x² + y² = 25'; }
+  if (r === '4'){ S.cargo = 'monitor'; S.tab = 'feedback'; S.fbAba = 'turma'; }
+  ultimaChave = ''; render();
+}
+document.getElementById('cargo').addEventListener('change', function(){ mudarCargo(this.value); });
+document.getElementById('horario').addEventListener('change', function(){ S.foraHorario = this.value === 'fora'; render(); });
+Array.prototype.forEach.call(document.querySelectorAll('[data-roteiro]'), function(b){
+  b.addEventListener('click', function(){ roteiro(b.getAttribute('data-roteiro')); });
+});
+
+/* ============================== modo exportação (Figma) ============================== */
+// #quadro      -> todas as telas lado a lado, uma por frame de 390 px
+// #tela=<id>   -> uma tela só, para gerar o PNG
+var ESTADOS = [
+  ['01-inicio-aluno',            'Início — aluno',                      {}],
+  ['02-inicio-monitor',          'Início — monitor (área da equipe)',   { cargo:'monitor' }],
+  ['03-inicio-visitante',        'Início — visitante (catálogo)',        { cargo:'visitante' }],
+  ['04-inicio-busca-vazia',      'Catálogo — busca sem resultado',      { cargo:'visitante', buscaEst:'grafos ponderados' }],
+  ['05-entrar-erro',             'Entrar — e-mail inválido',            { cargo:'visitante', tela:'entrar', email:'lorem@gmail.com', erroLogin:'Esse e-mail não é da universidade. Use o que termina em @sga.exemplo.br.', motivo:'Entre para favoritar estudos.' }],
+  ['06-criar-conta',             'Entrar — criar conta',                { cargo:'visitante', tela:'entrar', entrarAba:'criar' }],
+  ['07-notificacoes',            'Notificações',                        { tela:'notificacoes', respostaChegou:true, enqueteAberta:true }],
+  ['08-calendario-semana',       'Calendário — semana',                 { tab:'calendario' }],
+  ['09-calendario-tarefa',       'Calendário — modal da tarefa',        { tab:'calendario', tarefa:2 }],
+  ['10-calendario-mes',          'Calendário — mês com aulão',          { tab:'calendario', calVista:'mes', mesDia:18, aulaoMarcado:true }],
+  ['11-materias',                'Matérias — lista',                    { tab:'materias' }],
+  ['12-materia-detalhe',         'Matéria — detalhe (CDI I)',           { tab:'materias', tela:'materia', materia:'cdi' }],
+  ['13-estudos',                 'Matérias — Estudos',                  { tab:'materias', matAba:'estudos' }],
+  ['14-estudo-aluno',            'Estudo — aluno',                      { tab:'materias', tela:'estudo', estudo:1 }],
+  ['15-estudo-equipe',           'Estudo — ações da equipe',            { cargo:'monitor', tab:'materias', tela:'estudo', estudo:3, sheet:true }],
+  ['16-publicar',                'Publicar — com importação em lote',   { cargo:'monitor', tab:'materias', tela:'publicar', importou:true }],
+  ['17-publicar-sem-permissao',  'Publicar — sem permissão',            { tab:'materias', tela:'publicar' }],
+  ['18-chat-conversas',          'Chat — conversas',                    { tab:'chat', respostaChegou:true }],
+  ['19-chat-resposta',           'Chat — resposta do monitor',          { tab:'chat', tela:'conversa', conv:'ipsum', respostaChegou:true, pedidoEnviado:true }],
+  ['20-chat-fora-do-horario',    'Chat — fora do horário',              { tab:'chat', tela:'conversa', conv:'sit' }],
+  ['21-chat-caixa',              'Chat — caixa de entrada',             { tab:'chat', chatAba:'caixa', respostaChegou:true }],
+  ['22-duvidas-turma-monitor',   'Dúvidas — turma (monitor)',           { cargo:'monitor', tab:'feedback' }],
+  ['23-duvidas-enquete',         'Dúvidas — enquete votada',            { tab:'feedback', enqueteAberta:true, votou:true, voto:0, pedidoEnviado:true }],
+  ['24-duvidas-enviar',          'Dúvidas — enviar com triagem',        { tab:'feedback', fbAba:'enviar', assunto:'Derivação implícita de x² + y² = 25' }],
+  ['25-duvidas-enviada',         'Dúvidas — pedido #143 enviado',       { tab:'feedback', fbAba:'enviar', pedidoEnviado:true }],
+  ['26-auloes',                  'Dúvidas — aulão marcado',             { cargo:'monitor', tab:'feedback', fbAba:'auloes', enqueteAberta:true, aulaoMarcado:true }],
+  ['27-avaliacoes',              'Feedback — avaliações',               { tab:'feedback', fbAba:'avaliacoes', avalNota:4, avalCat:'Calendário' }],
+  ['28-config',                  'Configurações',                       { tab:'config' }],
+  ['29-config-perfil',           'Config — perfil',                     { tab:'config', tela:'cfg', cfgSec:'perfil' }],
+  ['30-config-notificacoes',     'Config — notificações',               { tab:'config', tela:'cfg', cfgSec:'notificacoes' }],
+  ['31-config-aparencia',        'Config — aparência',                  { tab:'config', tela:'cfg', cfgSec:'aparencia' }],
+  ['32-config-privacidade',      'Config — privacidade',                { tab:'config', tela:'cfg', cfgSec:'privacidade' }],
+  ['33-config-acessibilidade',   'Config — acessibilidade',             { tab:'config', tela:'cfg', cfgSec:'acessibilidade' }],
+  ['34-config-conta',            'Config — conta e segurança',          { tab:'config', tela:'cfg', cfgSec:'conta' }]
+];
+function aplicar(e){ S = clone(INICIAL); Object.keys(e[2]).forEach(function(k){ S[k] = e[2][k]; }); ultimaChave = ''; render(); }
+
+function exportar(){
+  var hsh = location.hash.slice(1);
+  if (hsh !== 'quadro' && hsh.indexOf('tela=') !== 0) return false;
+  var css = document.createElement('style');
+  css.textContent = '#palco{display:none!important}' +
+    '.quadro{display:flex;flex-wrap:wrap;gap:72px 56px;padding:56px;background:#f3f4f6;align-items:flex-start}' +
+    '.quadro-rot{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px;color:#6b7280;margin:0 0 12px}' +
+    '.frame{width:390px;min-height:844px;height:auto;background:#fff;border:1px solid #e5e7eb;position:relative;display:flex;flex-direction:column;overflow:hidden}' +
+    '.frame main{overflow:visible!important;flex:1;display:flex;flex-direction:column}' +
+    '.frame main>*{flex:1 0 auto}' +
+    '.solo{background:#fff}.solo .frame{border:0}';
+  document.head.appendChild(css);
+  var saida = document.createElement('div');
+  var lista = hsh === 'quadro' ? ESTADOS : ESTADOS.filter(function(e){ return e[0] === hsh.slice(5); });
+  if (!lista.length) return false;
+  saida.className = hsh === 'quadro' ? 'quadro' : 'solo';
+  lista.forEach(function(e){
+    aplicar(e);
+    var sec = document.createElement('section');
+    sec.setAttribute('data-frame', e[0]);
+    if (hsh === 'quadro') sec.innerHTML = '<p class="quadro-rot">' + e[0].slice(0,2) + ' · ' + e[1] + '</p>';
+    var f = document.createElement('div');
+    f.className = 'frame';
+    f.innerHTML = fone.innerHTML;
+    Array.prototype.forEach.call(f.querySelectorAll('[id]'), function(n){ n.removeAttribute('id'); });
+    sec.appendChild(f);
+    saida.appendChild(sec);
+  });
+  document.body.appendChild(saida);
+  return true;
+}
+
+if (!exportar()) render();
+
+if (EMBED){
+  window.addEventListener('message', function(ev){
+    if (ev.source !== window.parent || !ev.data || ev.data.hub !== 1) return;
+    if (ev.data.tipo === 'cargo'){ cargoAvisado = ev.data.v; mudarCargo(ev.data.v); }
+    if (ev.data.tipo === 'tarefa'){ roteiro(String(ev.data.v)); }
+    if (ev.data.tipo === 'horario'){ S.foraHorario = !!ev.data.v; render(); }
+  });
+  window.parent.postMessage({ hub:1, tipo:'pronto' }, '*');
+}
+})();
+</script>

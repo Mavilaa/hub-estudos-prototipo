@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hub de Estudos · Comece aqui</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --paper:#f1f1f1; --paper-2:#ffffff;
+    --ink:#1a1a1a; --ink-soft:#5c5c5c; --ink-faint:#8c8c8c;
+    --line:#1a1a1a; --line-soft:#d4d4d4;
+    --fill-soft:#ededed;
+    --acao:#1f4ed8; --acao-esc:#173bab;
+    --nota:#d1341c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:15px;line-height:1.55}
+  a{color:inherit}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .folha{max-width:1040px;margin:0 auto;padding:40px 20px 64px}
+
+  header{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--line);padding-bottom:24px}
+  .marca{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.02em}
+  .xicara{width:24px;height:24px;border:2px solid var(--line);border-radius:50%}
+  h1{font-size:34px;line-height:1.15;margin:12px 0 0;text-wrap:balance}
+  .sub{color:var(--ink-soft);margin:8px 0 0;max-width:60ch}
+  .abrir{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:600;text-decoration:none;background:var(--paper-2);font-size:14px}
+  .btn:hover{background:var(--fill-soft)}
+  .btn.cheio{background:var(--acao);border-color:var(--acao);color:#fff}
+  .btn.cheio:hover{background:var(--acao-esc);border-color:var(--acao-esc)}
+  .btn.peq{padding:5px 11px;font-size:13px;border-radius:8px}
+  a:focus-visible{outline:3px solid var(--acao);outline-offset:2px}
+
+  .rotulo{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:0}
+  section{margin-top:36px}
+  h2{font-size:21px;margin:6px 0 14px}
+
+  .como{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .como div{background:var(--paper-2);border:2px solid var(--line-soft);border-radius:12px;padding:14px 16px}
+  .como b{display:block;margin-bottom:2px}
+  .como p{margin:0;color:var(--ink-soft);font-size:14px}
+  .barra-demo{display:inline-block;background:var(--ink);color:#fff;border-radius:6px;padding:0 6px;font-size:12px}
+
+  .tarefas{display:grid;gap:14px}
+  .tarefa{background:var(--paper-2);border:2px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;gap:16px;grid-template-columns:1fr}
+  @media(min-width:820px){.tarefa{grid-template-columns:1.25fr 1fr}}
+  .tarefa h3{font-size:19px;margin:4px 0 2px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+  .chip{border:2px solid var(--line);border-radius:999px;padding:0 10px;font-size:12.5px;white-space:nowrap}
+  ol{margin:10px 0 0;padding-left:20px} ol li{margin:3px 0}
+  .fim{margin:10px 0 0;font-size:14px}
+  .lado{border-left:2px dashed var(--line-soft);padding-left:16px;display:flex;flex-direction:column;gap:10px}
+  @media(max-width:819px){.lado{border-left:0;padding-left:0;border-top:2px dashed var(--line-soft);padding-top:14px}}
+  .alt{margin:0;padding-left:18px;font-size:14px;color:var(--ink-soft)} .alt li{margin:3px 0}
+  .alt b{color:var(--ink)}
+  .dif{font-size:13px;color:var(--ink-soft);margin:0}
+  .comecar{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+
+  footer{margin-top:40px;padding-top:16px;border-top:2px dashed var(--line-soft);color:var(--ink-faint);font-size:13px}
+</style>
+
+<div class="folha">
+  <header>
+    <div>
+      <span class="marca"><span class="xicara"></span>HUB DE ESTUDOS</span>
+      <h1>Protótipo interativo</h1>
+      <p class="sub">Resumos, dúvidas com a monitoria e aulões da turma num lugar só. É um protótipo navegável: nada é salvo e os dados são fictícios.</p>
+    </div>
+    <div class="abrir">
+      <a class="btn cheio" href="prototipo.html">Abrir no desktop</a>
+      <a class="btn" href="prototipo.html?vista=celular">Abrir no celular</a>
+    </div>
+  </header>
+
+  <section>
+    <p class="rotulo">Antes de começar</p>
+    <h2>Como o protótipo funciona</h2>
+    <div class="como">
+      <div><b>Ponto de partida</b><p>Cada tarefa abaixo tem um botão que já coloca o protótipo no lugar certo, com o cargo certo.</p></div>
+      <div><b>Barra de teste</b><p>A <span class="barra-demo">faixa preta</span> no topo não faz parte do sistema: troca a tarefa, o cargo, o horário simulado e a versão.</p></div>
+      <div><b>Desktop e celular</b><p>As mesmas tarefas funcionam nas duas versões. “Ver no celular” alterna sem perder onde você parou.</p></div>
+      <div><b>Onde digitar</b><p>E-mail aceito: qualquer um terminado em <span class="mono">@sga.exemplo.br</span>. Senha: <span class="mono">123456</span>.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="rotulo">O que percorrer</p>
+    <h2>As quatro tarefas</h2>
+    <div class="tarefas">
+
+      <article class="tarefa">
+        <div>
+          <p class="rotulo">Tarefa 1 · fluxo F1</p>
+          <h3>Entrar no sistema</h3>
+          <div class="meta"><span class="chip">visitante</span><span class="chip">começa no Início</span></div>
+          <ol>
+            <li>Toque no <b>♡</b> de um estudo. Como você ainda não entrou, o protótipo leva para <b>Entrar</b>.</li>
+            <li>Digite <span class="mono">lorem@ipsum.com</span> e toque em Entrar: aparece o erro de e-mail.</li>
+            <li>Corrija para <span class="mono">lorem@sga.exemplo.br</span>, mantenha a senha <span class="mono">123456</span> e entre.</li>
+          </ol>
+          <p class="fim"><b>Termina quando</b> você está logado e o cabeçalho mostra Calendário, Dúvidas &amp; Feedback, Mensagens e Notificações.</p>
+        </div>
+        <div class="lado">
+          <p class="rotulo">Caminhos alternativos</p>
+          <ul class="alt">
+            <li><b>Senha errada:</b> qualquer senha diferente de 123456 mostra “E-mail ou senha incorretos”.</li>
+            <li><b>Criar conta:</b> a aba ao lado de Entrar cria a conta com as mesmas regras.</li>
+          </ul>
+          <div class="comecar">
+            <a class="btn cheio peq" href="prototipo.html?tarefa=1">Começar no desktop</a>
+            <a class="btn peq" href="prototipo.html?tarefa=1&amp;vista=celular">Começar no celular</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="tarefa">
+        <div>
+          <p class="rotulo">Tarefa 2 · fluxo F2</p>
+          <h3>Encontrar um material</h3>
+          <div class="meta"><span class="chip">aluno</span><span class="chip">começa no Início</span></div>
+          <ol>
+            <li>Busque um tema e abra o estudo que aparece.</li>
+            <li>Volte e busque <span class="mono">grafos ponderados</span>: não há resultado.</li>
+            <li>No estado vazio, toque em <b>Pedir esse material</b>.</li>
+          </ol>
+          <p class="fim"><b>Termina quando</b> o formulário de envio abre com o assunto já preenchido.</p>
+        </div>
+        <div class="lado">
+          <p class="dif"><b>Desktop:</b> busque <span class="mono">integrais</span>. <b>Celular:</b> vá em Matérias › Estudos e busque <span class="mono">regra da cadeia</span>.</p>
+          <p class="rotulo">Caminhos alternativos</p>
+          <ul class="alt">
+            <li><b>Refazer a busca:</b> “Limpar busca” no estado vazio.</li>
+            <li><b>Filtrar:</b> as pílulas de disciplina filtram junto com a busca.</li>
+          </ul>
+          <div class="comecar">
+            <a class="btn cheio peq" href="prototipo.html?tarefa=2">Começar no desktop</a>
+            <a class="btn peq" href="prototipo.html?tarefa=2&amp;vista=celular">Começar no celular</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="tarefa">
+        <div>
+          <p class="rotulo">Tarefa 3 · fluxo F3</p>
+          <h3>Tirar uma dúvida com a monitoria</h3>
+          <div class="meta"><span class="chip">aluno</span><span class="chip">começa em Dúvidas &amp; Feedback</span></div>
+          <ol>
+            <li>Veja as dúvidas mais frequentes da turma.</li>
+            <li>Vá em <b>Enviar</b>, confira “Já perguntaram parecido” e envie a sua.</li>
+            <li>Toque em <b>Simular a resposta do monitor</b>, abra a notificação e a conversa.</li>
+            <li>Responda <b>Sim, resolveu</b>.</li>
+          </ol>
+          <p class="fim"><b>Termina quando</b> a dúvida aparece como resolvida.</p>
+        </div>
+        <div class="lado">
+          <p class="rotulo">Caminhos alternativos</p>
+          <ul class="alt">
+            <li><b>Já tinha resposta:</b> “Resolveu, cancelar envio” não gera pedido.</li>
+            <li><b>Fora do horário:</b> mude o <b>Horário</b> da barra para 23:10 antes de enviar; a dúvida entra na fila e vira pedido ao simular as 8 h.</li>
+            <li><b>Não resolveu:</b> “Ainda não” reabre o pedido.</li>
+          </ul>
+          <div class="comecar">
+            <a class="btn cheio peq" href="prototipo.html?tarefa=3">Começar no desktop</a>
+            <a class="btn peq" href="prototipo.html?tarefa=3&amp;vista=celular">Começar no celular</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="tarefa">
+        <div>
+          <p class="rotulo">Tarefa 4 · fluxo F4</p>
+          <h3>Da dúvida repetida ao aulão</h3>
+          <div class="meta"><span class="chip">monitor</span><span class="chip">começa no painel da turma</span></div>
+          <ol>
+            <li>Veja onde a turma mais trava e toque em <b>Abrir enquete de aulão com os 3 do topo</b>.</li>
+            <li>Em <b>Aulões</b>, toque em <b>Encerrar e marcar data</b>.</li>
+            <li>Escolha 18/09, confira a sala e toque em <b>Confirmar aulão</b>.</li>
+            <li>Toque em <b>Ver no calendário</b>.</li>
+          </ol>
+          <p class="fim"><b>Termina quando</b> o aulão aparece no calendário, no dia 18.</p>
+        </div>
+        <div class="lado">
+          <p class="rotulo">Caminhos alternativos</p>
+          <ul class="alt">
+            <li><b>Empate:</b> “Simular empate” pede que o monitor escolha o tema.</li>
+            <li><b>Conflito de horário:</b> escolher 22/09 avisa que o horário cai no dia da prova.</li>
+            <li><b>Visão do aluno:</b> troque o cargo para aluno para votar na enquete.</li>
+          </ul>
+          <div class="comecar">
+            <a class="btn cheio peq" href="prototipo.html?tarefa=4">Começar no desktop</a>
+            <a class="btn peq" href="prototipo.html?tarefa=4&amp;vista=celular">Começar no celular</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer>Protótipo de interface para teste de usabilidade. Não há banco de dados nem servidor: tudo que acontece aqui é simulado no navegador.</footer>
+</div>
