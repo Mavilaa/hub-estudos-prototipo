@@ -140,7 +140,8 @@
      3. estado
      ====================================================================== */
   var S = {
-    cargo:'visitante', tela:'inicio', tarefa:'1',
+    // sem ?tarefa=, abre no hub do aluno; as tarefas do teste começam pela barra ou pelo index
+    cargo:'aluno', tela:'inicio', tarefa:null,
     busca:'', tags:[], sugIdx:0, sugFechada:false,
     aba:{msg:'conversas', duv:'turma'},
     naoLidasMsg:0, naoLidasNotif:0,
@@ -1172,7 +1173,7 @@
     desenharNav();
     el('menu-perfil').hidden = true; el('menu-notif').hidden = true; el('menu-ham').hidden = true;
     el('tela').innerHTML = (telas[S.tela] || telas.inicio)();
-    el('dica-txt').textContent = (vistaCel ? DICAS_MOB : DICAS)[S.tarefa];
+    el('dica-txt').textContent = S.tarefa ? (vistaCel ? DICAS_MOB : DICAS)[S.tarefa] : 'explore o hub do aluno, ou escolha uma tarefa na barra acima. Troque o Cargo para ver as telas de monitor, professor e admin.';
     if (S.cargo !== cargoNoCelular){ cargoNoCelular = S.cargo; paraCelular({tipo:'cargo', v:cargoCelular(S.cargo)}); }
   }
   // redesenha e devolve o foco (e o cursor) ao campo em que a pessoa está digitando
@@ -1476,7 +1477,7 @@
   window.addEventListener('message', function(ev){
     if (!fone || ev.source !== fone.contentWindow || !ev.data || ev.data.hub !== 1) return;
     if (ev.data.tipo === 'pronto'){
-      paraCelular({tipo:'tarefa', v:S.tarefa});
+      if (S.tarefa) paraCelular({tipo:'tarefa', v:S.tarefa}); else paraCelular({tipo:'cargo', v:cargoCelular(S.cargo)});
       paraCelular({tipo:'horario', v:S.foraHorario});
       cargoNoCelular = S.cargo;
     }
@@ -1587,6 +1588,7 @@
   if (/^[1-4]$/.test(params.get('tarefa') || '')){ S.tarefa = params.get('tarefa'); prepararTarefa(); }
   if (/^(visitante|aluno|monitor|professor|admin)$/.test(params.get('cargo') || '')){ S.cargo = params.get('cargo'); el('cargo').value = S.cargo; }
   if (params.get('tela') && telas[params.get('tela')]) S.tela = params.get('tela');
+  el('cargo').value = S.cargo;
   desenhar();
   if (params.get('vista') === 'celular') el('vista').click();
 })();
