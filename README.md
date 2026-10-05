@@ -3,6 +3,13 @@
 Protótipo navegável (sem banco de dados, sem servidor) usado no teste de usabilidade do
 projeto Hub de Estudos. Abra `index.html` para as instruções e as quatro tarefas.
 
+**Abrir:** https://mavilaa.github.io/hub-estudos-prototipo/
+
+<p>
+  <img src="imagens/hub-desktop.png" alt="Hub do aluno no desktop" width="68%">
+  <img src="imagens/hub-celular.png" alt="Hub do aluno no celular" width="26%">
+</p>
+
 | Arquivo | O que é |
 |---|---|
 | `index.html` | Página "Comece aqui": ponto de partida e tarefas |
