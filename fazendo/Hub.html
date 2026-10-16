@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Hub_Fazendo</title>
+</head>
+<body>
+    <header>
+        <nav class="calendario_nav">
+            <ul id="menu">
+                <h2>Hub de Estudos</h2>
+                <a href="">Inicio  </a>
+
+                <a href=""><p>Estudos</p>    </a>
+
+                <a href=""><p>Calendário</p>     </a>
+
+                <a href=""><p>Duvidas</p>     </a>
+                <a href=""><p>Mensagens</p>    </a>
+                <div class="menu_img">
+
+                <button type="button"><img src="" alt="7"></button>
+                <a href=""><img src="" alt="8"></a>
+            </div>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="topo_main">
+            <ul>
+                <h2>Calendário</h2>
+                <p>Tarefas, provas e aulões do mês</p>
+            </ul>
+           
+            <div id="botao_evento">
+                <button id="novo_evento">
+                <h3>+ Novo evento</h3>
+            </button>
+        </div>
+        </div>
+        <div class="importar">
+            <ul>
+            <img src="" alt="macac">
+                <p>Cole a URL do feed do calendário do Canvas. Ela fica em Calendário › Feed do calendário.</p>
+
+            <h4>URL do feed do Canvas</h4>
+            <input itemid="caixa_input" type="feed-url" id="api-link" placeholder="https://pucminas.instructure.com/feeds/calendars/user_….ics" required>
+            <button type="submit">Salvar e importar </button>
+            <button type="submit"> Atualizar Agora</button>
+            <p>Nenhuma importação ainda. Atualiza sozinho a cada 6 h, quando você abre o calendário.</p>
+           </ul>
+
+           <section class="eventos">
+            <ul>
+                <h4>Domingo, 11 de outubro</h4>
+                <div id="tarefas">
+                    <img src="" alt="calendario-img">
+                    <ul>
+                    <h4>Nada marcado nesse dia</h4>
+                        <p>Escolha outro dia na grade ou crie um evento.</p>
+                </ul>
+                </div>
+            </ul>
+            <section class="assinatura">
+                <ul>
+                <img src="" alt="correntes">
+                <h4>Assinar no seu app</h4>
+                <p>Google Agenda, Apple Calendário ou Outlook recebem suas tarefas sozinhos.</p>
+                <h5>Seu link de assinatura</h5>
+                    <div id="input">
+                        <input itemid="caixa_input_assinatura" type="feed-url" id="api-link" placeholder="https://hub.exemplo.br/feed/f0fce2c8.ics" required>
+                        <button type="submit">Copiar novo link</button>
+                        <button type="button">Gerar novo link</button>
+                    </div>
+                </ul>
+            </section>
+           </section>
+        </div>
+        <section class="calendario_principal">
+            Calendario..
+        </main>
+
+    <footer>
+
+
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#menu{
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-top: 21px;
+
+}
+
+.topo_main{
+    margin-top: 36px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+}
+
+#novo_evento{
+display: flex;
+align-items: center;
+justify-content: center;
+
+
+}
+
+#botao_evento{
+    margin-right: 40px;
+}
+
+.importar{
+display: flex;
+align-items: center;
+justify-content: space-between;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "hub-calendario",
+  "version": "1.0.0",
+  "description": "Hub de Estudos: cadastro de eventos do calendário (CRUD com JSON Server)",
+  "private": true,
+  "scripts": {
+    "start": "json-server db.json --static . --port 3000",
+    "reset": "node -e \"require('fs').copyFileSync('db.inicial.json','db.json')\""
+  },
+  "devDependencies": {
+    "json-server": "0.17.4"
+  }
+}
