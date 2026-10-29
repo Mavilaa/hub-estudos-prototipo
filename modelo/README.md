@@ -1,6 +1,6 @@
 # Hub de Estudos - Cadastro de eventos do calendário
 
-Trabalho Interdisciplinar - Sprint 1 (Cadastro de Informações / CRUD)
+Trabalho Interdisciplinar - Sprint 2 (Cadastro de Informações / CRUD)
 Aluno: Gustavo Martins
 
 Tela de calendário onde o aluno cadastra, vê, altera e exclui eventos da faculdade

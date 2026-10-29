@@ -1,5 +1,3 @@
-// Hub de Estudos - Cadastro de eventos do calendário
-// Os dados ficam no JSON Server (arquivo db.json). Para rodar: npm start
 
 const URL_API = 'http://localhost:3000';
 
@@ -55,6 +53,16 @@ function mostrarMensagem(texto) {
     document.getElementById('mensagem').innerText = texto;
 }
 
+function avisarErro(erro) {
+    console.log(erro);
+    mostrarMensagem('Não foi possível acessar o servidor. Rode o comando npm start.');
+}
+
+// evita que o texto digitado pelo usuário seja lido como HTML
+function textoSeguro(texto) {
+    return texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 
 // ===== Comunicação com o JSON Server =====
 
@@ -67,10 +75,7 @@ function carregarDados() {
             montarLegenda();
             carregarEventos();
         })
-        .catch(erro => {
-            console.log(erro);
-            mostrarMensagem('Não foi possível acessar o servidor. Rode o comando npm start.');
-        });
+        .catch(avisarErro);
 }
 
 // READ - busca todos os eventos e redesenha a tela
@@ -81,7 +86,8 @@ function carregarEventos() {
             eventos = dados;
             montarCalendario();
             montarEventosDoDia();
-        });
+        })
+        .catch(avisarErro);
 }
 
 // CREATE
@@ -96,7 +102,8 @@ function incluirEvento(evento) {
             mostrarMensagem('Evento cadastrado!');
             limparFormulario();
             carregarEventos();
-        });
+        })
+        .catch(avisarErro);
 }
 
 // UPDATE
@@ -111,7 +118,8 @@ function alterarEvento(id, evento) {
             mostrarMensagem('Evento alterado!');
             limparFormulario();
             carregarEventos();
-        });
+        })
+        .catch(avisarErro);
 }
 
 // DELETE
@@ -124,7 +132,8 @@ function excluirEvento(id) {
             mostrarMensagem('Evento excluído!');
             limparFormulario();
             carregarEventos();
-        });
+        })
+        .catch(avisarErro);
 }
 
 
@@ -174,7 +183,7 @@ function montarCalendario() {
         let eventosHtml = '';
         const lista = eventosDoDia(data);
         for (let i = 0; i < lista.length; i++) {
-            eventosHtml += `<div class="evento-mini" style="border-color: ${corDaMateria(lista[i].materia)}">${lista[i].titulo}</div>`;
+            eventosHtml += `<div class="evento-mini" style="border-color: ${corDaMateria(lista[i].materia)}">${textoSeguro(lista[i].titulo)}</div>`;
         }
 
         html += `<div class="${classes}" onclick="selecionarDia('${data}')">
@@ -203,10 +212,10 @@ function montarEventosDoDia() {
         let detalhes = `${ev.materia} - ${nomesTipos[ev.tipo]}`;
         if (ev.hora) detalhes += ` - ${ev.hora}`;
         else detalhes += ' - dia inteiro';
-        if (ev.sala) detalhes += ` - sala ${ev.sala}`;
+        if (ev.sala) detalhes += ` - sala ${textoSeguro(ev.sala)}`;
 
         html += `<div class="evento" style="border-color: ${corDaMateria(ev.materia)}">
-                    <h4>${ev.titulo}</h4>
+                    <h4>${textoSeguro(ev.titulo)}</h4>
                     <p>${detalhes}</p>
                     <button class="btn btn-outline-primary btn-sm" onclick="editarEvento('${ev.id}')">Editar</button>
                     <button class="btn btn-outline-danger btn-sm" onclick="excluirEvento('${ev.id}')">Excluir</button>
