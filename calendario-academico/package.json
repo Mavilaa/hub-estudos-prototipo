@@ -1,0 +1,9 @@
+{
+  "name": "calendario-academico",
+  "version": "1.0.0",
+  "description": "Hub de Estudos: calendário acadêmico (visão mensal e próximas entregas) com JSON Server",
+  "private": true,
+  "scripts": {
+    "start": "npx json-server@0.17.4 db.json --static . --port 3000"
+  }
+}
